@@ -2,57 +2,92 @@
     <div class="appointments-container">
         <div class="patients-header">
             <h2 class="section-title">Gestion des Rendez-vous</h2>
-            {{-- MODIFIED: Button to trigger the new modal --}}
             <button type="button" class="btn" data-modal-target="doctor-create-appointment-modal" id="btn-open-doctor-create-appt-modal">
                 + Créer un RDV
             </button>
         </div>
 
         {{-- Filters Form --}}
-        <form method="GET" action="{{-- route('doctor.appointments.index_filtered_or_similar') --}}" class="mb-3 form-inline" id="filter-appointments-form">
+        <form method="GET" action="{{ route('dashboard') }}#appointments" class="mb-3 form-inline" id="filter-appointments-form">
             <div class="form-group">
-                <label for="filter_date_doc_appt" class="sr-only">Date:</label> {{-- sr-only for accessibility if label is implicit --}}
+                <label for="filter_date_doc_appt" class="sr-only">Date:</label>
                 <input type="date" name="filter_date" id="filter_date_doc_appt" class="form-control form-control-sm" value="{{ request('filter_date') }}">
             </div>
             <div class="form-group">
                  <label for="filter_period_doc_appt" class="sr-only">Période:</label>
                  <select name="filter_period" id="filter_period_doc_appt" class="form-control form-control-sm">
-                    <option value="">Tout (à venir par défaut)</option>
+                    <option value="">Filtrer par période...</option>
                     <option value="today" {{ request('filter_period') == 'today' ? 'selected' : '' }}>Aujourd'hui</option>
                     <option value="this_week" {{ request('filter_period') == 'this_week' ? 'selected' : '' }}>Cette semaine</option>
                     <option value="this_month" {{ request('filter_period') == 'this_month' ? 'selected' : '' }}>Ce mois</option>
                  </select>
             </div>
             <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
-            <a href="{{-- route('doctor.appointments.index_default_or_similar') --}}" class="btn btn-sm btn-secondary ml-2" id="clear-filters-btn-doc-appt">Effacer</a>
+            <a href="{{ route('dashboard') }}#appointments" class="btn btn-sm btn-secondary ml-2">Effacer Filtres</a>
         </form>
 
-        <div class="appointments-list" id="doctor-appointments-list-container">
+        {{-- Using "Table of Divs" layout as previously established for doctor --}}
+        <div class="div-table appointments-list" id="doctor-appointments-list-container">
+            {{-- Table Header --}}
+            <div class="div-table-header appointment-item-header-row">
+                <div class="div-table-cell appointment-time-header">Date & Heure</div>
+                <div class="div-table-cell appointment-patient-header">Patient</div>
+                <div class="div-table-cell appointment-type-header">Type/Notes</div>
+                <div class="div-table-cell appointment-status-header">Statut</div>
+                <div class="div-table-cell appointment-actions-header">Actions</div>
+            </div>
+
+            {{-- Table Body --}}
             @if(isset($appointments) && $appointments->count() > 0)
                 @foreach ($appointments as $appointment)
-                    <div class="appointment-item">
-                        <div class="appointment-time">
-                            {{ $appointment->appointment_datetime->format('d/m/Y H:i') }}
+                    <div class="div-table-row appointment-item-data-row">
+                        <div class="div-table-cell appointment-time">
+                            {{ $appointment->appointment_datetime ? \Illuminate\Support\Carbon::parse($appointment->appointment_datetime)->format('d/m/Y H:i') : 'Date N/A' }}
                         </div>
-                        <div class="appointment-patient">
+                        <div class="div-table-cell appointment-patient">
                             {{ $appointment->patient->name ?? 'Patient Inconnu' }}
                         </div>
-                        <div class="appointment-type">
-                            {{ $appointment->notes ? Str::limit($appointment->notes, 30) : ($appointment->type ?? 'Consultation') }}
+                        <div class="div-table-cell appointment-type">
+                            {{ $appointment->notes ? Str::limit($appointment->notes, 30) : ($appointment->type_consultation ?? 'Consultation') }}
                         </div>
-                        <div class="appointment-status status-{{ $appointment->status ?? 'scheduled' }}">
-                            {{ ucfirst($appointment->status ?? 'Prévu') }}
+                        <div class="div-table-cell appointment-status-cell">
+                            <span class="appointment-status @if($appointment->status === 'completed') status-completed @elseif($appointment->status === 'scheduled') status-scheduled @elseif($appointment->status === 'cancelled') status-cancelled @else status-default @endif">
+                                @if($appointment->status === 'completed') Terminé
+                                @elseif($appointment->status === 'scheduled') Prévu
+                                @elseif($appointment->status === 'cancelled') Annulé
+                                @else {{ ucfirst($appointment->status ?? 'Indéfini') }} @endif
+                            </span>
                         </div>
-                        <div class="appointment-actions">
-                            {{-- Add action buttons like view details, edit, cancel --}}
-                            {{-- <a href="{{ route('doctor.appointments.show', $appointment->id) }}" class="btn btn-sm">Voir</a> --}}
+                        <div class="div-table-cell appointment-actions">
+                            @if($appointment->status === 'scheduled')
+                                <form action="{{ route('doctor.appointments.complete', $appointment->id) }}" method="POST" style="display:inline-block; margin-right: 5px;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-success" title="Marquer comme terminé">✔️</button>
+                                </form>
+                            @endif
+
+                            {{-- Form for DOCTOR to PERMANENTLY DELETE an Appointment --}}
+                            {{-- This button can be shown for 'scheduled' or 'cancelled' (by patient) status --}}
+                            @if($appointment->status === 'scheduled' || $appointment->status === 'cancelled')
+                                <form action="{{ route('doctor.appointments.destroy', $appointment->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir SUPPRIMER DÉFINITIVEMENT ce rendez-vous ? Cette action est irréversible.');">
+                                    @csrf
+                                    @method('DELETE') {{-- Use DELETE method for hard delete --}}
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer RDV (Irréversible)">❌</button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach
             @else
-                <p>Aucun rendez-vous à afficher pour les filtres sélectionnés.</p>
+                <div class="div-table-row">
+                    <div class="div-table-cell" style="text-align: center; padding: 20px; grid-column: 1 / -1;"> {{-- grid-column for grid, but here it's a single cell --}}
+                        Aucun rendez-vous à afficher pour les filtres sélectionnés ou pour la période actuelle.
+                    </div>
+                </div>
             @endif
         </div>
+
         @if(isset($appointments) && method_exists($appointments, 'hasPages') && $appointments->hasPages())
             <div class="mt-3" id="appointments-pagination-links">
                 {{ $appointments->appends(request()->query())->links() }}
