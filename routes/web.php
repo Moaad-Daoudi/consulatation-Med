@@ -4,13 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Appointment as AppointmentModel;
+use App\Models\Appointment as AppointmentModel; // Using an alias for clarity
 use Illuminate\Support\Carbon;
 
 // Import Controllers
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AppointmentController;
-use App\Http\Controllers\Doctor\PatientManagementController; // Ensure this controller exists if the route is active
+use App\Http\Controllers\Doctor\PatientManagementController; // Ensure this controller exists if used
 
 /*
 |--------------------------------------------------------------------------
@@ -27,15 +27,18 @@ Route::get('/dashboard', function (Request $request) {
         $user = Auth::user();
 
         if ($user->role && $user->role->name === 'doctor') {
+            // Data for Doctor's Dashboard
             $patientsForModal = User::whereHas('role', fn($q) => $q->where('name', 'patient'))
                                       ->orderBy('name')
                                       ->get(['id', 'name']);
             $doctorsForModal = [];
-            if (Auth::user()->role->name !== 'doctor') {
+            if (Auth::user()->role->name !== 'doctor') { // Example logic for an admin role
                 $doctorsForModal = User::whereHas('role', fn($q) => $q->where('name', 'doctor'))
                                          ->orderBy('name')
                                          ->get(['id', 'name']);
             }
+
+            // Fetch doctor's appointments with filtering
             $appointmentsQuery = AppointmentModel::where('doctor_id', Auth::id())->with('patient');
             if ($request->filled('filter_date')) {
                 $appointmentsQuery->whereDate('appointment_datetime', Carbon::parse($request->input('filter_date')));
@@ -53,11 +56,13 @@ Route::get('/dashboard', function (Request $request) {
                 'patientsForModal',
                 'doctorsForModal',
                 'appointments'
+                // 'consultations' // Removed
             ));
 
         } elseif ($user->role && $user->role->name === 'patient') {
+            // Data for Patient's Dashboard
             $doctors = User::whereHas('role', fn($q) => $q->where('name', 'doctor'))
-                             ->orderBy('name')->get(['id', 'name']);
+                             ->orderBy('name')->get(['id', 'name']); // For "Create Appointment" modal
             $now = Carbon::now();
             $upcomingAppointments = AppointmentModel::where('patient_id', $user->id)
                                         ->where('appointment_datetime', '>=', $now)
@@ -69,16 +74,20 @@ Route::get('/dashboard', function (Request $request) {
                                     ->where('appointment_datetime', '<', $now)
                                     ->with('doctor')
                                     ->orderBy('appointment_datetime', 'desc')
-                                    ->paginate(10);
+                                    ->paginate(10, ['*'], 'past_appointments_page');
 
-            return view('layouts.patient_dashboard', compact(
+            // Removed patientConsultations fetching
+            // $patientConsultations = ...
+
+            return view('layouts.patient_dashboard', compact( // Ensure your patient layout path is correct
                 'doctors',
                 'upcomingAppointments',
                 'pastAppointments'
+                // 'patientConsultations' // Removed
             ));
         }
     }
-    return view('dashboard');
+    return view('dashboard'); // Default Breeze dashboard
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -91,24 +100,26 @@ Route::post('/patient/appointments', [AppointmentController::class, 'store'])
     ->middleware(['auth', 'role:patient'])
     ->name('patient.appointments.store');
 
-Route::patch('/patient/appointments/{appointment}/cancel', [AppointmentController::class, 'patientCancelAppointment'])
+// Patient hard DELETES their appointment
+Route::delete('/patient/appointments/{appointment}/delete', [AppointmentController::class, 'destroy'])
     ->middleware(['auth', 'role:patient'])
-    ->name('patient.appointments.cancel');
+    ->name('patient.appointments.destroy');
 
-// Routes for DOCTOR's specific actions, prefixed with '/doctor' and named 'doctor.*'
+// Routes for DOCTOR's specific actions
 Route::middleware(['auth', 'verified', 'role:doctor'])->prefix('doctor')->name('doctor.')->group(function () {
-    // Doctor storing/creating an appointment (from their modal form)
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
-
-    // Doctor marking an appointment as completed
     Route::patch('/appointments/{appointment}/complete', [AppointmentController::class, 'markAsCompleted'])->name('appointments.complete');
+    Route::delete('/appointments/{appointment}/delete', [AppointmentController::class, 'destroy'])->name('appointments.destroy'); // For hard delete by doctor
 
-    // Doctor HARD DELETING an appointment
-    Route::delete('/appointments/{appointment}/delete', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
+    // Ensure PatientManagementController exists if this route is active
+    if (class_exists(PatientManagementController::class)) {
+        Route::post('/patients/store-from-modal', [PatientManagementController::class, 'storeFromModal'])->name('patients.store_from_modal');
+    }
 
-    // Route for doctor to store a new patient from the modal
-    // Ensure PatientManagementController exists and has the storeFromModal method.
-    Route::post('/patients/store-from-modal', [PatientManagementController::class, 'storeFromModal'])->name('patients.store_from_modal');
+    // REMOVED: Consultation Route for Doctor
+    // if (class_exists(App\Http\Controllers\Doctor\ConsultationController::class)) { // No longer needed
+    //    Route::post('/consultations', [App\Http\Controllers\Doctor\ConsultationController::class, 'store'])->name('consultations.store');
+    // }
 });
 
 

@@ -124,7 +124,7 @@
         .patient-appointments-table .appointment-doctor {
             /* Allow this to take more space */
         }
-        .patient-appointments-table .appointment-type-header, /* Header for type/notes column */
+        .patient-appointments-table .appointment-type-header, /* Header for type/reason column */
         .patient-appointments-table .appointment-type {
             color: #666;
             font-size: 0.9em;
@@ -147,6 +147,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .btn-danger {
+            background-color: var(--danger); /* Your red color variable */
+            color: white; /* Or whatever text color contrasts well */
+        }
+        .btn-danger:hover {
+            background-color: var(--danger-dark); /* A darker shade of red for hover */
         }
 
         /* Status badge styles (ensure these are defined) */
@@ -330,7 +338,6 @@
                 @include('patient.prescriptions')
                 @include('patient.lab_results')
                 @include('patient.messaging')
-                @include('patient.payments')
                 @include('patient.settings')
             </div>
         </main>
@@ -383,8 +390,8 @@
 
                     <div class="form-group full-width">
                         <label for="modal_patient_appt_notes_textarea">Notes (optionnel)</label>
-                        <textarea id="modal_patient_appt_notes_textarea" name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Motif court ou informations...">{{ old('notes') }}</textarea>
-                        @error('notes') <span class="text-danger text-sm">{{ $message }}</span> @enderror
+                        <textarea id="modal_patient_appt_notes_textarea" name="reason" class="form-control @error('reason') is-invalid @enderror" rows="3" placeholder="Motif court ou informations...">{{ old('reason') }}</textarea>
+                        @error('reason') <span class="text-danger text-sm">{{ $message }}</span> @enderror
                     </div>
                 </form>
             </div>

@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->constrained()->onDelete('cascade');
-            $table->foreignId('doctor_id')->constrained()->onDelete('cascade');
-            $table->dateTime('scheduled_at');
-            $table->integer('duration')->default(30);
-            $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled']);
-            $table->text('reason')->nullable();
+            $table->foreignId('patient_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('doctor_id')->constrained('users')->onDelete('cascade');
+            $table->dateTime('appointment_datetime'); // Ensure this is your chosen datetime column name
+            $table->enum('status', ['pending', 'confirmed', 'scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->text('notes')->nullable(); // This is for appointment details/reason
             $table->timestamps();
+
+            // Ensure unique constraint uses the correct datetime column name
+            $table->unique(['doctor_id', 'appointment_datetime']);
         });
     }
 

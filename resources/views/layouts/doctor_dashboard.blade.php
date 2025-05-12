@@ -328,7 +328,6 @@
                 @include('doctor.appointments')
                 @include('doctor.patients')
                 @include('doctor.consultations')
-                @include('doctor.dossiers')
                 @include('doctor.ordonnances')
                 @include('doctor.messagerie')
                 @include('doctor.parametres')
@@ -434,8 +433,8 @@
 
                     <div class="form-group full-width">
                         <label for="modal_doc_create_notes_textarea">Notes (optionnel)</label>
-                        <textarea id="modal_doc_create_notes_textarea" name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3">{{ old('notes') }}</textarea>
-                        @error('notes') <span class="text-danger text-sm">{{ $message }}</span> @enderror
+                        <textarea id="modal_doc_create_notes_textarea" name="reason" class="form-control @error('reason') is-invalid @enderror" rows="3">{{ old('reason') }}</textarea>
+                        @error('reason') <span class="text-danger text-sm">{{ $message }}</span> @enderror
                     </div>
                 </form>
             </div>
