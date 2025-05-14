@@ -60,4 +60,27 @@ class User extends Authenticatable
         return $this->hasOne(Patient::class);
     }
 
+    // app/Models/User.php
+    public function doctorConsultations()
+    {
+        return $this->hasMany(Consultation::class, 'doctor_id');
+    }
+
+    public function patientConsultations()
+    {
+        return $this->hasMany(Consultation::class, 'patient_id');
+    }
+
+    // Prescriptions issued by this user (if doctor)
+    public function issuedPrescriptions()
+    {
+        return $this->hasMany(Prescription::class, 'doctor_id');
+    }
+
+    // Prescriptions received by this user (if patient)
+    public function receivedPrescriptions()
+    {
+        return $this->hasMany(Prescription::class, 'patient_id');
+    }
+
 }

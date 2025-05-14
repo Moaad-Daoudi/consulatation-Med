@@ -280,9 +280,7 @@
                 {{-- Note: "Prendre rendez-vous" is now a modal triggered from patient_appointments_content --}}
                 <li><a href="#" class="menu-link" data-section="patient_medical_file_content"><div class="menu-icon">📁</div><span>Mon dossier médical</span></a></li>
                 <li><a href="#" class="menu-link" data-section="patient_prescriptions_content"><div class="menu-icon">💊</div><span>Mes ordonnances</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patient_lab_results_content"><div class="menu-icon">🔬</div><span>Résultats d'analyses</span></a></li>
                 <li><a href="#" class="menu-link" data-section="patient_messaging_content"><div class="menu-icon">💬</div><span>Messagerie</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patient_payments_content"><div class="menu-icon">💰</div><span>Paiements</span></a></li>
                 <li><a href="#" class="menu-link" data-section="patient_settings_content"><div class="menu-icon">⚙️</div><span>Profile</span></a></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}" id="logout-form-patient-dashboard" style="display: none;">@csrf</form>
@@ -301,14 +299,6 @@
                 <h1 class="page-title" id="patientDynamicPageTitle">Tableau de bord</h1>
                 @auth
                 <div class="topbar-actions">
-                    <div class="search-bar">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" placeholder="Rechercher...">
-                    </div>
-                    <div class="notification-bell">
-                        🔔
-                        <span class="notification-badge">{{-- Dynamic count --}}2</span>
-                    </div>
                     <div class="user-profile">
                         <div class="user-profile-img">{{ strtoupper(substr(Auth::user()->name, 0, 2)) }}</div>
                         <span>{{ Str::before(Auth::user()->name, ' ') }}</span>
@@ -336,7 +326,6 @@
                 ])
                 @include('patient.medical_file')
                 @include('patient.prescriptions')
-                @include('patient.lab_results')
                 @include('patient.messaging')
                 @include('patient.settings')
             </div>
