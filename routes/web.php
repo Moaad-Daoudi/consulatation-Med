@@ -10,6 +10,7 @@ use App\Models\Prescription as PrescriptionModel; // Added for dashboard data
 // use App\Models\Doctor; // Only if you have a separate Doctor model for a separate table
 // use App\Models\Patient; // Only if you have a separate Patient model for a separate table
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 // Import Controllers
 use App\Http\Controllers\ProfileController;
@@ -131,14 +132,113 @@ Route::get('/dashboard', function (Request $request) {
             $patientConsultations = ConsultationModel::where('patient_id', Auth::id())
                                         ->with(['doctor'])
                                         ->latest('consultation_date')
-                                        ->paginate(10, ['*'], 'patient_consultations_page');
+                                        ->orderBy('consultation_date', 'desc') // Show most recent first
+                                        ->get(); // Get all, or paginate if the list can be very long
 
             // Patient's own prescriptions
             $patientPrescriptions = PrescriptionModel::where('patient_id', Auth::id())
                                         ->with(['doctor', 'items', 'consultation'])
-                                        ->withCount('items')
-                                        ->latest('prescription_date')
-                                        ->paginate(10, ['*'], 'patient_prescriptions_page');
+                                        ->withcount('items')
+                                        ->orderBy('prescription_date', 'desc') // Show most recent first
+                                        ->get(); // Get all, or paginate
+
+            $activePrescriptions = collect();
+            $pastPrescriptions = collect();
+            $now = Carbon::now();
+
+            // Define $allPatientPrescriptions before using it
+            $allPatientPrescriptions = PrescriptionModel::where('patient_id', Auth::id())
+                                        ->with(['doctor', 'items', 'consultation'])
+                                        ->orderBy('prescription_date', 'desc')
+                                        ->get();
+
+            $activePrescriptions = collect();
+            $pastPrescriptions = collect();
+            $now = Carbon::now()->startOfDay(); // Compare against the start of today for consistency
+
+            Log::info("--- Processing prescriptions for patient " . Auth::id() . " at " . $now->toDateTimeString() . " ---");
+
+            foreach ($allPatientPrescriptions as $prescription) {
+                $isOverallPrescriptionActive = false;
+                $prescriptionDate = Carbon::parse($prescription->prescription_date)->startOfDay();
+                Log::info("Prescription ID: {$prescription->id}, Date: " . $prescriptionDate->toDateString());
+
+                if ($prescription->items->isNotEmpty()) {
+                    $latestItemEndDate = null; // Track the latest end date of any item in this prescription
+
+                    foreach ($prescription->items as $item) {
+                        Log::info("  Item: {$item->medication_name}, Duration String: '{$item->duration}'");
+                        $currentItemEndDate = null;
+
+                        if (isset($item->duration) && !empty(trim($item->duration))) {
+                            $durationStr = strtolower(trim($item->duration));
+
+                            if (preg_match('/^(\d+)$/', $durationStr, $matches)) { // Just a number, assume days
+                                $currentItemEndDate = $prescriptionDate->copy()->addDays((int)$matches[1] - 1); // -1 because day 1 is the prescription date
+                                Log::info("    Parsed as {$matches[1]} days. End date: " . ($currentItemEndDate ? $currentItemEndDate->toDateString() : 'N/A'));
+                            } elseif (preg_match('/(\d+)\s*j(?:our|ours)?/', $durationStr, $matches)) {
+                                $currentItemEndDate = $prescriptionDate->copy()->addDays((int)$matches[1] - 1);
+                                Log::info("    Parsed as {$matches[1]} jours. End date: " . ($currentItemEndDate ? $currentItemEndDate->toDateString() : 'N/A'));
+                            } elseif (preg_match('/(\d+)\s*s(?:emaine|emaines)?/', $durationStr, $matches)) {
+                                $currentItemEndDate = $prescriptionDate->copy()->addWeeks((int)$matches[1])->subDay(); // End of the last day of the last week
+                                Log::info("    Parsed as {$matches[1]} semaines. End date: " . ($currentItemEndDate ? $currentItemEndDate->toDateString() : 'N/A'));
+                            } elseif (preg_match('/(\d+)\s*m(?:ois)?/', $durationStr, $matches)) {
+                                $currentItemEndDate = $prescriptionDate->copy()->addMonths((int)$matches[1])->subDay(); // End of the last day of the last month
+                                Log::info("    Parsed as {$matches[1]} mois. End date: " . ($currentItemEndDate ? $currentItemEndDate->toDateString() : 'N/A'));
+                            } else {
+                                Log::warning("    Could not parse duration string: '{$durationStr}'");
+                            }
+
+                            if ($currentItemEndDate) {
+                                if (is_null($latestItemEndDate) || $currentItemEndDate->greaterThan($latestItemEndDate)) {
+                                    $latestItemEndDate = $currentItemEndDate;
+                                }
+                            }
+                        } else {
+                            // Item has no duration - how to handle?
+                            // Option A: Consider it ongoing/active indefinitely (or for a very long default period)
+                            // $latestItemEndDate = Carbon::now()->addYears(5); // Effectively makes it active
+                            // Log::info("    Item has no duration, considered active by default.");
+                            // break; // If one item is considered active by default, the whole prescription could be.
+
+                            // Option B: Ignore items without duration for active/past calculation, or rely on a default prescription active period.
+                            Log::info("    Item has no duration string, skipping for end date calculation of this item.");
+                        }
+                    } // End foreach item
+
+                    if ($latestItemEndDate && $now->lessThanOrEqualTo($latestItemEndDate->endOfDay())) { // Compare with end of day of end date
+                        $isOverallPrescriptionActive = true;
+                    } elseif (is_null($latestItemEndDate) && $prescription->items->isNotEmpty()) {
+                        // All items had no parsable duration. Apply a default active period for such prescriptions.
+                        // Example: Active for 30 days from prescription date if no item specifies a duration.
+                        if ($prescriptionDate->copy()->addDays(30)->isFuture()) {
+                            $isOverallPrescriptionActive = true;
+                            Log::info("  All items lacked parsable duration. Active by default 30-day rule.");
+                        }
+                    }
+
+
+                } else { // Prescription has no items
+                    // Consider it active for a short default period (e.g., 7 days from prescription_date)
+                    if ($prescriptionDate->copy()->addDays(7)->isFuture()) {
+                        $isOverallPrescriptionActive = true;
+                        Log::info("  No items. Active by default 7-day rule.");
+                    }
+                }
+
+                if ($isOverallPrescriptionActive) {
+                    $activePrescriptions->push($prescription);
+                    Log::info("  >> Classified as ACTIVE");
+                } else {
+                    $pastPrescriptions->push($prescription);
+                    Log::info("  >> Classified as PAST");
+                }
+            }
+            Log::info("--- Finished processing prescriptions. Active: " . $activePrescriptions->count() . ", Past: " . $pastPrescriptions->count() . " ---");
+
+            // Sort them again (collections are mutable, push might not preserve order of original query)
+            $activePrescriptions = $activePrescriptions->sortByDesc('prescription_date');
+            $pastPrescriptions = $pastPrescriptions->sortByDesc('prescription_date');
 
 
             return view('layouts.patient_dashboard', compact(
@@ -146,7 +246,8 @@ Route::get('/dashboard', function (Request $request) {
                 'upcomingAppointments',
                 'pastAppointments',
                 'patientConsultations',
-                'patientPrescriptions'
+                'activePrescriptions',
+                'pastPrescriptions'
             ));
         }
     }

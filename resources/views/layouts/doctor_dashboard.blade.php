@@ -1391,44 +1391,89 @@
                 const url = this.dataset.url;
                 const modal = document.getElementById('viewPrescriptionModal');
                 const body = document.getElementById('viewPrescriptionModalBody');
-                if (!modal || !body || !url) return;
+                if (!modal || !body || !url) {
+                    console.error("View Prescription Modal or Body or URL not found.");
+                    return;
+                }
 
-                body.innerHTML = '<p>Chargement des détails...</p>'; // Loading state
+                body.innerHTML = '<p class="text-center py-3">Chargement des détails...</p>'; // Loading state
                 modal.classList.add('active');
 
                 fetch(url)
                     .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok.');
+                        if (!response.ok) {
+                            let errorMsg = `Erreur réseau: ${response.status}`;
+                            return response.text().then(text => { // Try to get more error info
+                                throw new Error(`${errorMsg} - ${text}`);
+                            });
+                        }
                         return response.json();
                     })
                     .then(data => {
-                        let itemsHtml = '<ul>';
-                        data.items.forEach(item => {
-                            itemsHtml += `<li><strong>${item.medication_name}</strong> ${item.dosage || ''} - ${item.frequency || ''}, ${item.duration || ''} <em>(${item.notes || 'Pas de notes'})</em></li>`;
-                        });
-                        itemsHtml += '</ul>';
+                        if (!data || !data.patient) { // Basic check if data is as expected
+                            throw new Error("Données de l'ordonnance invalides ou patient manquant.");
+                        }
 
-                        const consultationLink = data.consultation ? `Consultation du ${new Date(data.consultation.consultation_date).toLocaleDateString('fr-FR')} (Motif: ${data.consultation.reason_for_visit.substring(0,30)})` : 'Aucune';
+                        let itemsHtml = ''; // Changed from <ul> to generate paragraphs
+                        if (data.items && data.items.length > 0) {
+                            data.items.forEach(item => {
+                                let sentence = `Le médicament <strong>${item.medication_name || 'Non spécifié'}</strong>`;
+
+                                if (item.dosage) {
+                                    sentence += ` doit être pris à une dose de ${item.dosage}`;
+                                } else {
+                                    sentence += ` doit être pris`; // If no dosage, phrase it slightly differently
+                                }
+
+                                if (item.frequency) {
+                                    sentence += `, ${item.frequency.toLowerCase()}/jour`; // e.g., "trois fois par jour"
+                                }
+
+                                if (item.duration) {
+                                    sentence += `, pendant une durée de ${item.duration.toLowerCase()} jour`;
+                                }
+                                sentence += "."; // End base sentence
+
+                                if (item.notes) {
+                                    // Capitalize first letter of notes if it doesn't start with a common phrase
+                                    let formattedNotes = item.notes.trim();
+                                    if (formattedNotes) {
+                                        formattedNotes = formattedNotes.charAt(0).toUpperCase() + formattedNotes.slice(1);
+                                        sentence += ` ${formattedNotes}`;
+                                        if (!formattedNotes.endsWith('.')) {
+                                            sentence += ".";
+                                        }
+                                    }
+                                }
+                                itemsHtml += `<p style="margin-bottom: 0.75em;">${sentence}</p>`;
+                            });
+                        } else {
+                            itemsHtml = "<p>Aucun médicament listé pour cette ordonnance.</p>";
+                        }
+
+
+                        const consultationLink = data.consultation
+                            ? `Consultation du ${new Date(data.consultation.consultation_date).toLocaleDateString('fr-FR')} (Motif: ${data.consultation.reason_for_visit ? data.consultation.reason_for_visit.substring(0,30) : 'N/A'})`
+                            : 'Aucune';
 
                         body.innerHTML = `
                             <p><strong>Patient:</strong> <span id="view_prescription_patient">${data.patient.name}</span></p>
                             <p><strong>Date:</strong> <span id="view_prescription_date">${new Date(data.prescription_date).toLocaleDateString('fr-FR')}</span></p>
                             <p><strong>Consultation Liée:</strong> <span id="view_prescription_consultation">${consultationLink}</span></p>
                             <p><strong>Notes Générales:</strong></p>
-                            <p id="view_prescription_general_notes" style="white-space:pre-wrap;">${data.general_notes || 'N/A'}</p>
+                            <p id="view_prescription_general_notes" style="white-space:pre-wrap; margin-bottom: 1em;">${data.general_notes || 'N/A'}</p>
                             <hr>
                             <h6>Médicaments:</h6>
                             <div id="view_prescription_items_list">${itemsHtml}</div>
                         `;
                     })
                     .catch(error => {
-                        console.error('Error fetching prescription details:', error);
-                        body.innerHTML = '<p class="text-danger">Erreur lors du chargement des détails.</p>';
+                        console.error('Error fetching or processing prescription details:', error);
+                        body.innerHTML = `<p class="text-danger text-center py-3">Erreur lors du chargement des détails de l'ordonnance. (${error.message})</p>`;
                     });
             });
         });
         // --- END: JS for "View Prescription Modal" ---
-
 
     }); // End DOMContentLoaded
     </script>

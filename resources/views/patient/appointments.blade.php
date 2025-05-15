@@ -60,7 +60,7 @@
                                     <form action="{{ route('patient.appointments.destroy', $appointment->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');" style="display:inline-block;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-warning" title="Annuler ce rendez-vous">Annuler</button>
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Annuler ce rendez-vous" style="background-color: red;">Annuler</button>
                                     </form>
                                 @endif
                             </td>

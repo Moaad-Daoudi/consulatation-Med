@@ -136,7 +136,7 @@
         }
         .patient-appointments-table .appointment-actions-header, /* Header for actions column */
         .patient-appointments-table .appointment-actions {
-            width: 100px; /* Adjust for the cancel button */
+            width: 200px; /* Adjust for the cancel button */
             text-align: right;
         }
 
@@ -179,14 +179,190 @@
             overflow-x: auto; /* Adds horizontal scroll on small screens */
             -webkit-overflow-scrolling: touch;
         }
-        /* Medical File */
-        .medical-info-section { margin-bottom: 30px; }
-        .medical-info-header { font-weight: bold; margin-bottom: 10px; }
-        .medical-info-list { list-style: none; padding-left: 0; }
-        .medical-info-item { display: flex; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .medical-info-item:last-child { border-bottom: none; }
-        .medical-info-label { width: 200px; font-weight: 500; color: #555; }
-        .medical-info-value { flex: 1; }
+
+        /* --- Patient Medical File Specific Styles --- */
+
+        /* Main container for each section within the medical file (Personal Info, Consultations, Prescriptions) */
+        .medical-file-section-container {
+            background-color: var(--bg-white); /* Uses your defined --bg-white */
+            border-radius: 10px;              /* Uses your defined border-radius for containers */
+            box-shadow: var(--shadow);            /* Uses your defined --shadow */
+            padding: 25px;
+            margin-bottom: 30px;              /* Consistent spacing between sections */
+        }
+
+        /* Title for each section (e.g., "Informations Personnelles") */
+        .medical-file-section-container .section-title {
+            font-size: 1.4rem; /* Slightly larger title */
+            margin-bottom: 25px; /* More space below title */
+            padding-bottom: 12px; /* Underline padding */
+            border-bottom: 2px solid var(--primary-light); /* Use a theme color for underline */
+            color: var(--primary-dark); /* Darker theme color for title text */
+            font-weight: 600;
+        }
+
+        /* Grid for Personal Information */
+        .personal-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+            gap: 20px 30px; /* Row gap, Column gap */
+        }
+
+        .info-block {
+            /* No border by default, looks cleaner */
+        }
+
+        .info-block .info-label {
+            font-weight: 500; /* Was 600, slightly less heavy */
+            color: #555;      /* Dark gray for label */
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em; /* Smaller label text */
+            /* text-transform: uppercase; */ /* Removed uppercase for softer look, optional */
+        }
+
+        .info-block .info-value {
+            font-size: 1em;
+            color: var(--text-dark);
+            word-break: break-word; /* Handle long values like emails */
+        }
+
+        /* Card styling for each Consultation or Prescription entry */
+        .medical-entry-card {
+            background-color: #fdfdfd; /* Very light gray, almost white, for the card background */
+            border: 1px solid #e9e9e9; /* Softer border color */
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;      /* Space between cards */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06); /* Softer shadow */
+            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        .medical-entry-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* More pronounced shadow on hover */
+            /* transform: translateY(-2px); */ /* Slight lift on hover - optional */
+        }
+
+        /* Header within each entry card (for Date and Doctor Name) */
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #ccc; /* Softer dashed line */
+        }
+
+        .entry-header h5 { /* For Consultation Date / Prescription Date */
+            margin: 0;
+            font-size: 1.15em; /* Slightly larger date heading */
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .entry-header .doctor-name {
+            font-size: 0.9em;
+            color: #6c757d; /* Bootstrap's text-muted color */
+            font-style: italic;
+        }
+
+        /* Styling for detail blocks (Motif, Symptômes, Notes, Diagnostic, etc.) */
+        .entry-detail {
+            margin-bottom: 15px; /* Space between detail items */
+        }
+        .entry-detail:last-child {
+            margin-bottom: 0;
+        }
+
+        .entry-detail strong { /* For labels like "Motif:", "Symptômes:" */
+            display: block;
+            color: var(--text-dark);
+            font-weight: 600; /* Bold labels */
+            margin-bottom: 6px;
+            font-size: 0.95em; /* Standard label size */
+        }
+
+        .entry-detail .detail-content { /* For the actual value/text */
+            padding: 12px 15px; /* More padding */
+            background-color: var(--bg-light); /* Uses your defined --bg-light */
+            border-radius: 5px;
+            border: 1px solid #eef0f3; /* Lighter border for content box */
+            white-space: pre-wrap;     /* Preserve formatting for notes/symptoms */
+            font-size: 0.95em;         /* Readable content text */
+            color: #333;             /* Darker text for content */
+            line-height: 1.6;
+        }
+
+        /* Styling for the list of medications within a prescription card */
+        .medication-list-item {
+            padding: 10px 0; /* More vertical padding */
+            border-bottom: 1px dotted #ddd; /* Dotted separator for medication items */
+            font-size: 0.95em; /* Consistent font size */
+        }
+
+        .medication-list-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0; /* Remove bottom padding for the last item */
+        }
+
+        .medication-list-item .med-name {
+            font-weight: bold;
+            color: var(--primary-dark); /* Use a theme color for medication name */
+        }
+
+        .medication-list-item .med-details {
+            color: #454545; /* Slightly darker gray for details */
+            display: block;
+            margin-left: 15px; /* More indentation */
+            font-size: 0.9em; /* Slightly smaller for details */
+            line-height: 1.5;
+        }
+        .medication-list-item .med-details span { /* If you wrap parts of details in spans */
+            margin-right: 8px; /* Space between detail parts */
+        }
+
+
+        .medication-list-item .med-notes {
+            display: block;
+            margin-left: 15px;
+            margin-top: 4px; /* Add some space above notes */
+            font-style: italic;
+            color: #777;
+            font-size: 0.85em; /* Smaller for notes */
+        }
+
+        /* Utility classes from your Blade file (ensure they are defined or use Bootstrap) */
+        .text-center { text-align: center !important; }
+        .py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
+        .mt-4 { margin-top: 1.5rem !important; }
+        .mt-3 { margin-top: 1rem !important; }
+        .text-end { text-align: right !important; }
+        .d-flex { display: flex !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .align-items-center { align-items: center !important; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-1 { margin-bottom: .25rem !important; }
+        .mb-2 { margin-bottom: .5rem !important; }
+        .p-3 { padding: 1rem !important; }
+        .border { border: 1px solid #dee2e6 !important; } /* Bootstrap's default border color */
+        .rounded { border-radius: .25rem !important; } /* Bootstrap's default border radius */
+        .shadow-sm { box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important; } /* Bootstrap's small shadow */
+        .list-unstyled { padding-left: 0; list-style: none; }
+        .ps-3 { padding-left: 1rem !important; }
+        .text-muted { color: #6c757d !important; } /* Bootstrap's text-muted color */
+
+        /* Ensure these are defined if you used them in the dossier and are not using Bootstrap full CSS */
+        .list-group.list-group-flush .list-group-item {
+            border-width: 0 0 1px;
+            padding: .75rem 0; /* Adjust as needed if you use list-group-item directly */
+            background-color: transparent; /* Flush items usually don't have background */
+        }
+        .list-group.list-group-flush .list-group-item:last-child {
+            border-bottom-width: 0;
+        }
+        .w-100 { width: 100% !important; }
+
         /* Prescriptions (Patient View) */
         .prescription-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
         .prescription-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
@@ -386,7 +562,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary modal-close-btn">Annuler</button>
-                <button type="submit" form="form-patient-create-appointment-modal" class="btn">Confirmer Rendez-vous</button>
             </div>
         </div>
     </div>
