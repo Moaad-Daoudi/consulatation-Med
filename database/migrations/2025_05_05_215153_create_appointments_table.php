@@ -8,6 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * ['pending', 'confirmed', 'scheduled', 'completed', 'cancelled']
      */
     public function up(): void
     {
@@ -16,7 +17,7 @@ return new class extends Migration
             $table->foreignId('patient_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('doctor_id')->constrained('users')->onDelete('cascade');
             $table->dateTime('appointment_datetime'); // Ensure this is your chosen datetime column name
-            $table->enum('status', ['pending', 'confirmed', 'scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
             $table->text('notes')->nullable(); // This is for appointment details/reason
             $table->timestamps();
 

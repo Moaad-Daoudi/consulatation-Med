@@ -9,13 +9,14 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\QueryException;
 
 class AppointmentController extends Controller
 {
     protected $workingHours = [
-        'start_morning' => '09:00', 'end_morning' => '12:30',
-        'start_afternoon' => '14:00', 'end_afternoon' => '16:00',
+        'start_morning' => '09:00',
+        'end_morning' => '12:30',
+        'start_afternoon' => '14:00',
+        'end_afternoon' => '16:00',
     ];
     protected $appointmentSlotIntervalMinutes = 15;
     protected $nonWorkingDays = [Carbon::SATURDAY, Carbon::SUNDAY];
@@ -61,7 +62,9 @@ class AppointmentController extends Controller
             $currentSlotTime->addMinutes($this->appointmentSlotIntervalMinutes);
         }
         $lastPossibleStartTime = $date->copy()->setTimeFromTimeString($this->workingHours['end_afternoon'])->subMinutes($this->appointmentSlotIntervalMinutes)->format('H:i');
-        $availableSlots = array_filter($availableSlots, function($slot) use ($lastPossibleStartTime) { return $slot <= $lastPossibleStartTime; });
+        $availableSlots = array_filter($availableSlots, function ($slot) use ($lastPossibleStartTime) {
+            return $slot <= $lastPossibleStartTime;
+        });
 
         if (empty($availableSlots)) return response()->json(['slots' => [], 'message' => 'Aucun créneau disponible.']);
         return response()->json(['slots' => array_values($availableSlots)]);
@@ -85,15 +88,12 @@ class AppointmentController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        // [Rest of your validation code remains the same until the existing appointment check]
-
         $date = Carbon::parse($request->input('appointment_date'));
         $time = $request->input('appointment_time');
         $appointmentDatetime = $date->copy()->setTimeFromTimeString($time);
         $doctorId = $request->input('doctor_id');
         $patientIdToStore = $isDoctorMakingAppointment ? $request->input('patient_id') : $loggedInUser->id;
 
-        // Check if patient already has an appointment with this doctor on this day
         $existingWithSameDoctor = Appointment::where('patient_id', $patientIdToStore)
             ->where('doctor_id', $doctorId)
             ->whereDate('appointment_datetime', $date)
@@ -111,12 +111,9 @@ class AppointmentController extends Controller
             return redirect()->back()
                 ->with('error', $errorMsg)
                 ->withInput()
-                ->with('open_modal_on_load', 'default_modal'); // Replace 'default_modal' with the appropriate modal name if needed
+                ->with('open_modal_on_load', 'default_modal');
         }
 
-        // [Rest of your existing code for checking time slots, etc.]
-
-        // Then proceed with creating the appointment
         $appointmentData = [
             'patient_id' => $patientIdToStore,
             'doctor_id' => $doctorId,
@@ -127,9 +124,7 @@ class AppointmentController extends Controller
 
         try {
             $appointment = Appointment::create($appointmentData);
-        }
-        catch (\Exception $e) {
-            // [Your existing error handling]
+        } catch (\Exception $e) {
         }
 
         return redirect()->route('dashboard', $request->only(['filter_date', 'filter_period']))
@@ -138,7 +133,11 @@ class AppointmentController extends Controller
     public function markAsCompleted(Request $request, Appointment $appointment)
     {
         if ($appointment->doctor_id !== Auth::id()) return redirect()->route('dashboard', $request->query())->with('error', 'Non autorisé.');
-        if (in_array($appointment->status, ['scheduled', 'pending', 'confirmed'])) { $appointment->status = 'completed'; $appointment->save(); return redirect()->route('dashboard', $request->query())->with('success', 'RDV terminé.'); }
+        if (in_array($appointment->status, ['scheduled'])) {
+            $appointment->status = 'completed';
+            $appointment->save();
+            return redirect()->route('dashboard', $request->query())->with('success', 'RDV terminé.');
+        }
         return redirect()->route('dashboard', $request->query())->with('info', 'Statut RDV: ' . $appointment->status);
     }
 
@@ -152,17 +151,17 @@ class AppointmentController extends Controller
         $apptDateTime = Carbon::parse($appointment->appointment_datetime);
 
         if ($isDoctor && $appointment->doctor_id === $user->id) {
-            if (in_array($appointment->status, ['scheduled', 'pending', 'confirmed', 'cancelled'])) {
+            if (in_array($appointment->status, ['scheduled', 'cancelled'])) {
                 $canDelete = true;
             } else {
                 $errorMsg = 'Statut ne permet pas suppression par docteur.';
             }
         } elseif ($isPatient && $appointment->patient_id === $user->id) {
             // Modified condition: Only check if appointment is in the future
-            if (in_array($appointment->status, ['scheduled', 'pending', 'confirmed']) && $apptDateTime->isFuture()) {
+            if (in_array($appointment->status, ['scheduled']) && $apptDateTime->isFuture()) {
                 $canDelete = true;
             } else {
-                if (!in_array($appointment->status, ['scheduled', 'pending', 'confirmed'])) {
+                if (!in_array($appointment->status, ['scheduled'])) {
                     $errorMsg = 'Statut ne permet pas suppression.';
                 } else if (!$apptDateTime->isFuture()) {
                     $errorMsg = 'Vous ne pouvez pas supprimer un rendez-vous passé.';
@@ -178,8 +177,8 @@ class AppointmentController extends Controller
             $appointment->delete();
             return redirect()->route('dashboard', $request->query())->with('success', 'RDV supprimé.');
         } catch (\Exception $e) {
-            Log::error("Error deleting appt {$appointment->id}: ".$e->getMessage());
-            return redirect()->route('dashboard',$request->query())->with('error','Erreur suppression RDV.');
+            Log::error("Error deleting appt {$appointment->id}: " . $e->getMessage());
+            return redirect()->route('dashboard', $request->query())->with('error', 'Erreur suppression RDV.');
         }
     }
 }

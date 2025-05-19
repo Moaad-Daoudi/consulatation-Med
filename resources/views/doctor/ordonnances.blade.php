@@ -69,7 +69,7 @@
                     @foreach(old('medications') as $key => $med)
                     <div class="medication-item-row border p-3 mb-3 rounded bg-light shadow-sm">
                         <input type="hidden" name="medications[{{ $key }}][id]" value="{{ $med['id'] ?? '' }}"> {{-- Should be empty for new prescription --}}
-                        <div class="row">
+                        <div class="row"> {{-- medication-item-row specific grid --}}
                             <div class="col-md-6 form-group mb-2">
                                 <label for="med_name_{{$key}}">Nom du Médicament *</label>
                                 <input type="text" id="med_name_{{$key}}" name="medications[{{ $key }}][name]" class="form-control @error('medications.'.$key.'.name', 'prescriptionCreate') is-invalid @enderror" placeholder="Ex: Amoxicilline" value="{{ $med['name'] ?? '' }}" required>
@@ -81,7 +81,7 @@
                                 @error('medications.'.$key.'.dosage', 'prescriptionCreate') <span class="text-danger text-sm d-block mt-1">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row"> {{-- medication-item-row specific grid --}}
                             <div class="col-md-4 form-group mb-2">
                                 <label for="med_freq_{{$key}}">Fréquence</label>
                                 <input type="text" id="med_freq_{{$key}}" name="medications[{{ $key }}][frequency]" class="form-control @error('medications.'.$key.'.frequency', 'prescriptionCreate') is-invalid @enderror" placeholder="Ex: 3 fois/jour" value="{{ $med['frequency'] ?? '' }}">
@@ -106,7 +106,7 @@
                 @else
                     {{-- Default first medication row --}}
                     <div class="medication-item-row border p-3 mb-3 rounded bg-light shadow-sm">
-                        <div class="row">
+                        <div class="row"> {{-- medication-item-row specific grid --}}
                             <div class="col-md-6 form-group mb-2">
                                 <label for="med_name_0">Nom du Médicament *</label>
                                 <input type="text" id="med_name_0" name="medications[0][name]" class="form-control" placeholder="Ex: Amoxicilline" required>
@@ -116,7 +116,7 @@
                                 <input type="text" id="med_dosage_0" name="medications[0][dosage]" class="form-control" placeholder="Ex: 500mg, 1 comprimé">
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row"> {{-- medication-item-row specific grid --}}
                             <div class="col-md-4 form-group mb-2">
                                 <label for="med_freq_0">Fréquence</label>
                                 <input type="text" id="med_freq_0" name="medications[0][frequency]" class="form-control" placeholder="Ex: 3 fois/jour">
@@ -153,10 +153,10 @@
         <h2 class="section-title">Historique des Ordonnances</h2>
         <div class="div-table prescriptions-list mt-3">
             <div class="div-table-header">
-                <div class="div-table-cell" style="width: 15%;">Date</div>
-                <div class="div-table-cell" style="width: 30%;">Patient</div>
-                <div class="div-table-cell" style="width: 20%;">Nb. Médicaments</div>
-                <div class="div-table-cell" style="width: 35%; text-align:right;">Actions</div>
+                <div class="div-table-cell">Date</div>
+                <div class="div-table-cell">Patient</div>
+                <div class="div-table-cell">Nb. Médicaments</div>
+                <div class="div-table-cell">Actions</div>
             </div>
             @php
                 // This data should be passed from the main dashboard controller via $prescriptionsForDashboard
@@ -169,36 +169,37 @@
             @endphp
             @forelse($prescriptionsToDisplay as $prescription)
             <div class="div-table-row prescription-item-row">
-                <div class="div-table-cell">
+                <div class="div-table-cell"> <!-- Date -->
                     {{ $prescription->prescription_date->format('d/m/Y') }}
                 </div>
-                <div class="div-table-cell">
+                <div class="div-table-cell"> <!-- Patient -->
                     {{ $prescription->patient->name ?? 'Patient Inconnu' }}
                 </div>
-                <div class="div-table-cell">
+                <div class="div-table-cell"> <!-- Nb. Médicaments -->
                     {{ $prescription->items_count }}
                 </div>
-                <div class="div-table-cell prescription-actions" style="text-align:right;">
+                <div class="div-table-cell prescription-actions">
                     <button type="button" class="btn btn-sm btn-info view-prescription-btn"
                             data-id="{{ $prescription->id }}"
                             data-url="{{ route('doctor.prescriptions.show', $prescription->id) }}">
-                        👁️ Voir
+                        Voir
                     </button>
-                    <button type="button" class="btn btn-sm btn-warning edit-prescription-btn ms-1"
+                    <button type="button" class="btn btn-sm btn-warning edit-prescription-btn"
                             data-id="{{ $prescription->id }}"
                             data-edit-url="{{ route('doctor.prescriptions.edit', $prescription->id) }}">
-                        ✏️ Modifier
+                        Modifier
                     </button>
-                    <form action="{{ route('doctor.prescriptions.destroy', $prescription->id) }}" method="POST" class="d-inline-block ms-1" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ordonnance ?');">
+                    <form action="{{ route('doctor.prescriptions.destroy', $prescription->id) }}" method="POST" class="d-inline-block"
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ordonnance ?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger">❌ Suppr.</button>
+                        <button type="submit" class="btn btn-sm btn-danger">Suppr</button>
                     </form>
                 </div>
             </div>
             @empty
             <div class="div-table-row">
-                <div class="div-table-cell" style="text-align:center; padding: 20px; width:100%;">
+                <div class="div-table-cell" data-empty-row="true">
                     Aucune ordonnance trouvée.
                 </div>
             </div>
@@ -216,7 +217,7 @@
 <template id="medication-row-template">
     <div class="medication-item-row border p-3 mb-3 rounded bg-light shadow-sm">
         <input type="hidden" name="medications[__INDEX__][id]" value=""> {{-- For existing items during edit --}}
-        <div class="row">
+        <div class="row"> {{-- medication-item-row specific grid --}}
             <div class="col-md-6 form-group mb-2">
                 <label for="med_name___INDEX__">Nom du Médicament *</label>
                 <input type="text" id="med_name___INDEX__" name="medications[__INDEX__][name]" class="form-control" placeholder="Ex: Amoxicilline" required>
@@ -226,7 +227,7 @@
                 <input type="text" id="med_dosage___INDEX__" name="medications[__INDEX__][dosage]" class="form-control" placeholder="Ex: 500mg, 1 comprimé">
             </div>
         </div>
-        <div class="row">
+        <div class="row"> {{-- medication-item-row specific grid --}}
             <div class="col-md-4 form-group mb-2">
                 <label for="med_freq___INDEX__">Fréquence</label>
                 <input type="text" id="med_freq___INDEX__" name="medications[__INDEX__][frequency]" class="form-control" placeholder="Ex: 3 fois/jour">

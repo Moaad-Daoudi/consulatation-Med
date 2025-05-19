@@ -33,7 +33,7 @@
                         <button type="button" class="btn btn-sm btn-info view-consultation-details-btn"
                                 data-modal-target="viewConsultationDetailModal"
                                 data-consultation-details="{{ htmlspecialchars(json_encode($consultation->load(['patient', 'appointment'])), ENT_QUOTES, 'UTF-8') }}">
-                            👁️ Voir
+                            Voir
                         </button>
                         <button type="button" class="btn btn-sm btn-warning edit-consultation-btn"
                                 data-modal-target="editConsultationModal"
@@ -45,12 +45,12 @@
                                 data-notes="{{ htmlspecialchars($consultation->notes ?? '', ENT_QUOTES) }}"
                                 data-diagnosis="{{ htmlspecialchars($consultation->diagnosis ?? '', ENT_QUOTES) }}">
                                 {{-- Removed data-treatment-plan --}}
-                            ✏️ Modifier
+                            Modifier
                         </button>
                         <form action="{{ route('doctor.consultations.destroy', $consultation->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette consultation ?');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer Consultation">❌</button>
+                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer Consultation">supprimer</button>
                         </form>
                     </div>
                 </div>

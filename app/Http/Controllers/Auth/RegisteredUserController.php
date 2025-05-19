@@ -41,7 +41,7 @@ class RegisteredUserController extends Controller
             'role_id' => ['required', 'integer', 'exists:roles,id'],
         ]);
 
-        // MODIFICATION: Ensure role_id from request is used
+        
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,

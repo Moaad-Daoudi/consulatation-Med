@@ -193,8 +193,8 @@
                         <li><a href="#home">Accueil</a></li>
                         <li><a href="#services">Services</a></li>
                         <li><a href="#doctors">Médecins</a></li>
-                        <li><a href="login.html">Connexion</a></li>
-                        <li><a href="signup.html">Inscription</a></li>
+                        <li><a href="{{ route('login') }}">Connexion</a></li>
+                        <li><a href="{{ route('register') }}">Inscription</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">

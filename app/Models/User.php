@@ -60,7 +60,7 @@ class User extends Authenticatable
         return $this->hasOne(Patient::class);
     }
 
-    // app/Models/User.php
+    
     public function doctorConsultations()
     {
         return $this->hasMany(Consultation::class, 'doctor_id');

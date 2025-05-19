@@ -15,6 +15,8 @@
             --info: #00bcd4;  --info-dark: #00acc1;
             --text-dark: #333; --text-light: #f5f5f5;
             --bg-light: #f8f9fa; --bg-white: #ffffff; --shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --color-patient-appointments: #FFA500; /* Orange like doctor's appointment card */
+            --color-patient-prescriptions: #2196F3; /* Blue like doctor's prescription card */
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
@@ -24,6 +26,31 @@
         /* Sidebar */
         .sidebar { width: 280px; background-color: var(--primary-dark); color: var(--text-light); height: 100%; overflow-y: auto; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        /* This CSS should be in the stylesheet used by the patient dashboard */
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            /* ... other existing 'a' tag styles ... */
+        }
+
+        .menu-icon {
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;  /* Adjust as needed */
+            height: 24px; /* Adjust as needed */
+            flex-shrink: 0;
+        }
+
+        .menu-icon img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
         .logo { font-size: 24px; font-weight: bold; }
         .logo span { color: var(--secondary-light); }
         .user-info { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -54,13 +81,73 @@
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* General Element Styles (from patient_dashboard.html original) */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background-color: var(--bg-white); border-radius: 10px; box-shadow: var(--shadow); padding: 20px; display: flex; align-items: center; }
-        .stat-icon { width: 60px; height: 60px; border-radius: 10px; background-color: rgba(25, 118, 210, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-right: 20px; }
-        .stat-icon.appointments { background-color: rgba(67, 160, 71, 0.1); color: var(--secondary); } /* Patient specific */
-        .stat-icon.prescriptions { background-color: rgba(255, 183, 77, 0.1); color: var(--warning); } /* Patient specific */
-        .stat-icon.messages { background-color: rgba(229, 57, 53, 0.1); color: var(--danger); }
+        /* REPLACE existing styles for these classes in patient_dashboard.blade.php */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); /* Match doctor's minmax */
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-white);
+            border-radius: 8px; /* Match doctor's radius */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Match doctor's shadow */
+            padding: 18px 20px; /* Match doctor's padding */
+            display: flex;
+            align-items: center;
+            border-left: 5px solid transparent; /* This is key for the colored left border */
+            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .stat-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* NEW: Add this class for the icon container (using image) */
+        .stat-icon-img-only {
+            width: 38px;  /* Adjust size as needed, doctor uses this */
+            height: 38px; /* Adjust size as needed */
+            margin-right: 18px; /* Space between icon and text */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon-img-only img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ensures the image fits well */
+        }
+
+        .stat-info { /* Ensure this matches doctor's styling */
+            flex-grow: 1;
+            line-height: 1.3;
+        }
+
+        .stat-info h3 { /* Adjust font size to match doctor's if desired */
+            font-size: 1.9rem; /* Doctor's dashboard uses this, or adjust */
+            font-weight: 700;
+            margin-bottom: 0px; /* Tighten up spacing */
+        }
+
+        .stat-info p { /* Adjust font size and color */
+            color: #555;
+            font-size: 0.85rem; /* Doctor's dashboard uses this, or adjust */
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* NEW: Specific styles for patient stat cards (border and H3 color) */
+        .stat-card.card-patient-appointments { border-left-color: var(--color-patient-appointments); }
+        .stat-card.card-patient-appointments .stat-info h3 { color: var(--color-patient-appointments); }
+
+        .stat-card.card-patient-prescriptions { border-left-color: var(--color-patient-prescriptions); }
+        .stat-card.card-patient-prescriptions .stat-info h3 { color: var(--color-patient-prescriptions); }
+
         .stat-info h3 { font-size: 1.8rem; margin-bottom: 5px; }
         .stat-info p { color: #777; font-size: 0.9rem; }
         .content-container { background-color: var(--bg-white); border-radius: 10px; box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; }
@@ -451,23 +538,66 @@
             </div>
             @endauth
             <ul class="sidebar-menu">
-                <li><a href="#" class="menu-link active" data-section="patient_dashboard_content"><div class="menu-icon">📊</div><span>Tableau de bord</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patient_appointments_content"><div class="menu-icon">📅</div><span>Mes rendez-vous</span></a></li>
-                {{-- Note: "Prendre rendez-vous" is now a modal triggered from patient_appointments_content --}}
-                <li><a href="#" class="menu-link" data-section="patient_medical_file_content"><div class="menu-icon">📁</div><span>Mon dossier médical</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patient_prescriptions_content"><div class="menu-icon">💊</div><span>Mes ordonnances</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patient_messaging_content"><div class="menu-icon">💬</div><span>Messagerie</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patient_settings_content"><div class="menu-icon">⚙️</div><span>Profile</span></a></li>
+                <li>
+                    <a href="#" class="menu-link active" data-section="patient_dashboard_content">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/tableau_de_bord.png') }}" alt="Dashboard Icon">
+                        </div>
+                        <span>Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="patient_appointments_content">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/rendez_vous.png') }}" alt="Appointments Icon">
+                        </div>
+                        <span>Mes rendez-vous</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="patient_medical_file_content">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/dossier_medical.png') }}" alt="Medical File Icon">
+                        </div>
+                        <span>Mon dossier médical</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="patient_prescriptions_content">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/ordonnances.png') }}" alt="Prescriptions Icon">
+                        </div>
+                        <span>Mes ordonnances</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="patient_messaging_content">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/messages.png') }}" alt="Messaging Icon">
+                        </div>
+                        <span>Messagerie</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="patient_settings_content">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/profile.png') }}" alt="Profile Icon">
+                        </div>
+                        <span>Profile</span>
+                    </a>
+                </li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}" id="logout-form-patient-dashboard" style="display: none;">@csrf</form>
                     <a href="{{ route('logout') }}" class="menu-link"
-                       onclick="event.preventDefault(); document.getElementById('logout-form-patient-dashboard').submit();">
-                        <div class="menu-icon">🚪</div><span>Déconnexion</span>
+                    onclick="event.preventDefault(); document.getElementById('logout-form-patient-dashboard').submit();">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/logout.png') }}" alt="Logout Icon">
+                        </div>
+                        <span>Déconnexion</span>
                     </a>
                 </li>
             </ul>
         </aside>
-
         <!-- Main Content -->
         <main class="main-content">
             <!-- Topbar -->
@@ -515,57 +645,64 @@
                 <h3 class="modal-title">Prendre un Nouveau Rendez-vous</h3>
                 <button type="button" class="modal-close" aria-label="Fermer">×</button>
             </div>
-            <div class="modal-body">
-                @if($errors->any() && session('open_modal_on_load') === 'patient-create-appointment-modal') {{-- Specific error display for this modal --}}
-                    <div class="alert alert-danger">
-                        <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-                    </div>
-                @endif
-                <form id="form-patient-create-appointment-modal" action="{{ route('patient.appointments.store') }}" method="POST" class="modal-form">
-                    @csrf
-                    <div class="form-group">
-                        <label for="modal_patient_appt_doctor_select">Médecin</label>
-                        <select id="modal_patient_appt_doctor_select" name="doctor_id" class="form-control @error('doctor_id') is-invalid @enderror" required>
-                            <option value="">Sélectionner un médecin</option>
-                            @foreach ($doctors ?? [] as $doctor) {{-- $doctors is passed from the main dashboard route --}}
-                                <option value="{{ $doctor->id }}" {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>{{ $doctor->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('doctor_id') <span class="text-danger text-sm">{{ $message }}</span> @enderror
-                    </div>
+            {{-- The FORM tag now starts here and wraps modal-body and modal-footer --}}
+            <form id="form-patient-create-appointment-modal" action="{{ route('patient.appointments.store') }}" method="POST">
+                @csrf {{-- CSRF token at the beginning of the form --}}
+                <div class="modal-body">
+                    @if($errors->any() && session('open_modal_on_load') === 'patient-create-appointment-modal')
+                        <div class="alert alert-danger">
+                            <strong>Erreurs:</strong>
+                            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                        </div>
+                    @endif
 
-                    <div class="form-group">
-                        <label for="modal_patient_appt_date_input">Date</label>
-                        <input type="date" id="modal_patient_appt_date_input" name="appointment_date" class="form-control @error('appointment_date') is-invalid @enderror" value="{{ old('appointment_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required>
-                        @error('appointment_date') <span class="text-danger text-sm">{{ $message }}</span> @enderror
-                    </div>
+                    {{-- This div now handles the grid layout for form elements --}}
+                    <div class="modal-form">
+                        <div class="form-group">
+                            <label for="modal_patient_appt_doctor_select">Médecin</label>
+                            <select id="modal_patient_appt_doctor_select" name="doctor_id" class="form-control @error('doctor_id') is-invalid @enderror" required>
+                                <option value="">Sélectionner un médecin</option>
+                                @foreach ($doctors ?? [] as $doctor)
+                                    <option value="{{ $doctor->id }}" {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}>{{ $doctor->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('doctor_id') <span class="text-danger text-sm">{{ $message }}</span> @enderror
+                        </div>
 
-                    <div class="form-group full-width">
-                        <label for="modal_patient_appt_time_select">Heure Disponible</label>
-                        <select id="modal_patient_appt_time_select" name="appointment_time" class="form-control @error('appointment_time') is-invalid @enderror" required>
-                            <option value="">Sélectionnez d'abord un médecin et une date</option>
-                             @if(old('appointment_time'))
-                                <option value="{{ old('appointment_time') }}" selected>{{ old('appointment_time') }} (Précédemment)</option>
-                            @endif
-                        </select>
-                        @error('appointment_time') <span class="text-danger text-sm">{{ $message }}</span> @enderror
-                        <div id="modal_patient_slots_loading" style="display: none; margin-top: 5px;">Chargement des créneaux...</div>
-                        <div id="modal_patient_slots_error" style="display: none; color: red; margin-top: 5px;"></div>
-                    </div>
+                        <div class="form-group">
+                            <label for="modal_patient_appt_date_input">Date</label>
+                            <input type="date" id="modal_patient_appt_date_input" name="appointment_date" class="form-control @error('appointment_date') is-invalid @enderror" value="{{ old('appointment_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required>
+                            @error('appointment_date') <span class="text-danger text-sm">{{ $message }}</span> @enderror
+                        </div>
 
-                    <div class="form-group full-width">
-                        <label for="modal_patient_appt_notes_textarea">Notes (optionnel)</label>
-                        <textarea id="modal_patient_appt_notes_textarea" name="reason" class="form-control @error('reason') is-invalid @enderror" rows="3" placeholder="Motif court ou informations...">{{ old('reason') }}</textarea>
-                        @error('reason') <span class="text-danger text-sm">{{ $message }}</span> @enderror
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary modal-close-btn">Annuler</button>
-            </div>
+                        <div class="form-group full-width">
+                            <label for="modal_patient_appt_time_select">Heure Disponible</label>
+                            <select id="modal_patient_appt_time_select" name="appointment_time" class="form-control @error('appointment_time') is-invalid @enderror" required>
+                                <option value="">Sélectionnez d'abord un médecin et une date</option>
+                                 @if(old('appointment_time'))
+                                    <option value="{{ old('appointment_time') }}" selected>{{ old('appointment_time') }} (Précédemment)</option>
+                                @endif
+                            </select>
+                            @error('appointment_time') <span class="text-danger text-sm">{{ $message }}</span> @enderror
+                            <div id="modal_patient_slots_loading" style="display: none; margin-top: 5px;">Chargement des créneaux...</div>
+                            <div id="modal_patient_slots_error" style="display: none; color: red; margin-top: 5px;"></div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="modal_patient_appt_notes_textarea">Notes (optionnel)</label>
+                            <textarea id="modal_patient_appt_notes_textarea" name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Motif court ou informations...">{{ old('notes') }}</textarea>
+                            @error('notes') <span class="text-danger text-sm">{{ $message }}</span> @enderror
+                        </div>
+                    </div> {{-- End of .modal-form div --}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Annuler</button>
+                    {{-- ADDED THE SUBMIT BUTTON --}}
+                    <button type="submit" class="btn btn-primary">Créer le rendez-vous</button>
+                </div>
+            </form> {{-- The FORM tag now ends here, after the modal-footer --}}
         </div>
     </div>
-
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- SPA Navigation Logic ---

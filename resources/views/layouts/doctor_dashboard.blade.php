@@ -15,6 +15,12 @@
             --info: #00bcd4;  --info-dark: #00acc1;/* Example for info buttons */
             --text-dark: #333; --text-light: #f5f5f5;
             --bg-light: #f8f9fa; --bg-white: #ffffff; --shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+            /* Colors for Stat Card Borders & Titles (Adjust as needed) */
+            --color-appointments: #FFA500;
+            --color-patients: #4CAF50;
+            --color-prescriptions: #2196F3;
+            --color-messages: #F44336;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
@@ -24,6 +30,37 @@
         /* Sidebar */
         .sidebar { width: 280px; background-color: var(--primary-dark); color: var(--text-light); height: 100%; overflow-y: auto; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center; /* This will help vertically align icon and text */
+            padding: 12px 20px;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        .menu-icon {
+            margin-right: 10px;
+            /* font-size: 1.2rem; -- This was for emoji font size, might not be needed or can be adjusted */
+            display: flex; /* To help center the image if its container is larger */
+            align-items: center;
+            justify-content: center;
+            width: 24px;  /* Set a fixed width for the icon container */
+            height: 24px; /* Set a fixed height for the icon container */
+            flex-shrink: 0; /* Prevent the icon container from shrinking */
+        }
+
+        .menu-icon img {
+            max-width: 100%;  /* Ensures image scales down to fit container */
+            max-height: 100%; /* Ensures image scales down to fit container */
+            object-fit: contain; /* Scales image while maintaining aspect ratio, fitting within bounds */
+            /* Or use:
+            object-fit: cover; -- If you want image to fill bounds, potentially cropping
+            width: 20px; -- If you want a fixed image size smaller than container
+            height: 20px; -- If you want a fixed image size smaller than container
+            */
+            display: block; /* Removes any extra space below the image if it's treated as inline */
+        }
+
         .logo { font-size: 24px; font-weight: bold; }
         .logo span { color: var(--secondary-light); }
         .user-info { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -51,17 +88,94 @@
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* General Element Styles */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background-color: var(--bg-white); border-radius: 10px; box-shadow: var(--shadow); padding: 20px; display: flex; align-items: center; }
-        .stat-icon { width: 60px; height: 60px; border-radius: 10px; background-color: rgba(25, 118, 210, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-right: 20px; }
-        .stat-icon.patients { background-color: rgba(67, 160, 71, 0.1); color: var(--secondary); }
-        .stat-icon.appointments { background-color: rgba(255, 183, 77, 0.1); color: var(--warning); }
-        .stat-icon.messages { background-color: rgba(229, 57, 53, 0.1); color: var(--danger); }
-        .stat-info h3 { font-size: 1.8rem; margin-bottom: 5px; }
-        .stat-info p { color: #777; font-size: 0.9rem; }
-        .ordonnance-container, .appointments-container, .patients-container, .consultations-container, .dossiers-container { background-color: var(--bg-white); border-radius: 10px; box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; }
+        /* --- NEW Stat Card Styles (Dashboard) --- */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            border-left: 5px solid transparent;
+            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .stat-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon-img-only {
+            width: 38px;
+            height: 38px;
+            margin-right: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon-img-only img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .stat-info {
+            flex-grow: 1;
+            line-height: 1.3;
+        }
+
+        .stat-info h3 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 0px;
+        }
+
+        .stat-info p {
+            color: #555;
+            font-size: 0.85rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-card.card-appointments { border-left-color: var(--color-appointments); }
+        .stat-card.card-appointments .stat-info h3 { color: var(--color-appointments); }
+
+        .stat-card.card-patients { border-left-color: var(--color-patients); }
+        .stat-card.card-patients .stat-info h3 { color: var(--color-patients); }
+
+        .stat-card.card-prescriptions { border-left-color: var(--color-prescriptions); }
+        .stat-card.card-prescriptions .stat-info h3 { color: var(--color-prescriptions); }
+
+        .stat-card.card-messages { border-left-color: var(--color-messages); }
+        .stat-card.card-messages .stat-info h3 { color: var(--color-messages); }
+        /* --- End NEW Stat Card Styles --- */
+
+        /* General Container & Form Styles */
+        .ordonnance-container, .appointments-container, .patients-container, .consultations-container, .dossiers-container, .content-container {
+            background-color: var(--bg-white); border-radius: 10px; box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px;
+        }
+        .patients-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
         .section-title { font-size: 1.3rem; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .patients-header .section-title {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
         .section-subtitle {font-size: 1.1rem; margin-bottom: 1rem; font-weight: 500;}
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
@@ -86,15 +200,31 @@
         .btn-sm { padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem; }
         .btn-outline-primary { color: var(--primary); border: 1px solid var(--primary); background-color: transparent;}
         .btn-outline-primary:hover { color: #fff; background-color: var(--primary); border-color: var(--primary); }
-        .mt-2 { margin-top: .5rem !important; } .mb-3 { margin-bottom: 1rem !important; } .my-4 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; } .my-5 { margin-top: 3rem !important; margin-bottom: 3rem !important; } .me-2 { margin-right: .5rem !important; }
-        .d-flex { display: flex !important; } .justify-content-end { justify-content: flex-end !important; } .justify-content-center { justify-content: center !important; }
+
+        /* Button with image icon styles */
+        .btn-icon { padding: 0; width: 32px; height: 32px; border-radius: 5px; line-height: 0; overflow: hidden; }
+        .button-img-icon { width: 28px; height: 28px; object-fit: contain; vertical-align: middle; }
+        .button-img-icon-with-text { width: 18px; height: 18px; margin-right: 7px; object-fit: contain; vertical-align: middle; }
+        .btn-success-img, .btn-danger-img { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+        .btn-success-img:hover, .btn-danger-img:hover { background-color: rgba(0,0,0,0.05) !important; }
+
+        .mt-2 { margin-top: .5rem !important; } .mt-3 { margin-top: 1rem !important; } .mt-4 { margin-top: 1.5rem !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .my-4 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
+        .my-5 { margin-top: 3rem !important; margin-bottom: 3rem !important; }
+        .me-2 { margin-right: .5rem !important; } .ml-2 { margin-left: .5rem !important; } /* Note: ms- and me- classes from Bootstrap 5 might be preferred if using it */
+        .d-flex { display: flex !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .justify-content-end { justify-content: flex-end !important; }
+        .justify-content-center { justify-content: center !important; }
+        .align-items-center { align-items: center !important; }
         .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
-        .medication-list { margin-top: 20px; } /* Used in old ordonnance form, can be reused or adapted */
+        .medication-list { margin-top: 20px; }
         .medication-item { display: flex; background-color: var(--bg-light); border-radius: 5px; padding: 10px 15px; margin-bottom: 10px; justify-content: space-between; align-items: center; }
         .medication-info span { font-weight: bold; margin-right: 10px; }
         .remove-med { color: var(--danger); cursor: pointer; }
-        .row { display: flex; flex-wrap: wrap; margin-right: -10px; margin-left: -10px; } /* Basic row */
-        .col-md-6, .col-md-4 { padding-right: 10px; padding-left: 10px; margin-bottom: 10px; } /* Basic col */
+        .row { display: flex; flex-wrap: wrap; margin-right: -10px; margin-left: -10px; } /* Standard row for grid */
+        .col-md-6, .col-md-4 { padding-right: 10px; padding-left: 10px; margin-bottom: 10px; } /* Standard col for grid */
         .col-md-6 { flex: 0 0 50%; max-width: 50%; }
         .col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
         .bg-light { background-color: var(--bg-light) !important; }
@@ -103,60 +233,44 @@
         .rounded { border-radius: .25rem !important; }
         .border { border: 1px solid #dee2e6 !important; }
 
+        /* Div Table Styles */
+        .div-table { display: table; width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        .div-table-header, .div-table-row { display: table-row; border-bottom: 1px solid #eee; }
+        .div-table-header { font-weight: bold; background-color: var(--bg-light); }
+        .div-table-row:hover { background-color: #f9f9f9; }
+        .div-table-cell { display: table-cell; padding: 12px 10px; vertical-align: middle; text-align: left; word-break: break-word; }
 
-        /* --- DIV TABLE STYLES (Generic and Specific) --- */
-        .div-table {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            table-layout: fixed; /* Important for column width control */
-        }
-        .div-table-header, .div-table-row {
-            display: table-row;
-            border-bottom: 1px solid #eee;
-        }
-        .div-table-header {
-            font-weight: bold;
-            background-color: var(--bg-light);
-        }
-        .div-table-row:hover {
-             background-color: #f9f9f9;
-        }
-        .div-table-header:last-child, .div-table-row:last-child { /* Might not be needed with border-collapse */
-            border-bottom: none;
-        }
-        .div-table-cell {
-            display: table-cell;
-            padding: 12px 10px;
-            vertical-align: middle;
-            text-align: left;
-            word-break: break-word; /* Prevent long words from breaking layout */
-        }
-
-        /* APPOINTMENTS div table specifics */
-        .appointments-list .div-table-cell.appointment-time { width: 20%; white-space: nowrap; }
-        .appointments-list .div-table-cell.appointment-patient { width: 30%; }
-        .appointments-list .div-table-cell.appointment-type { width: 20%; color: #666; font-size: 0.9em; }
-        .appointments-list .div-table-cell.appointment-status-cell { width: 15%; text-align: center; }
-        .appointments-list .div-table-cell.appointment-actions { width: 15%; text-align: right; white-space: nowrap; }
+        /* Appointments Div Table Specifics */
+        .appointments-list .div-table-cell.appointment-time,
+        .appointments-list .div-table-cell.appointment-time-header { width: 18%; white-space: nowrap; }
         .appointments-list .div-table-cell.appointment-patient,
-        .appointments-list .div-table-cell.appointment-type {
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .appointment-status {
-            display: inline-block; padding: 5px 10px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: 500; color: white; white-space: nowrap;
-        }
+        .appointments-list .div-table-cell.appointment-patient-header { width: 25%; }
+        .appointments-list .div-table-cell.appointment-type,
+        .appointments-list .div-table-cell.appointment-type-header { width: 22%; color: #666; font-size: 0.9em; }
+        .appointments-list .div-table-cell.appointment-status-cell,
+        .appointments-list .div-table-cell.appointment-status-header { width: 15%; text-align: center; }
+        .appointments-list .div-table-cell.appointment-actions,
+        .appointments-list .div-table-cell.appointment-actions-header { width: 20%; text-align: right; white-space: nowrap; }
+
+        .appointments-list .div-table-cell.appointment-patient,
+        .appointments-list .div-table-cell.appointment-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .appointment-status { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; color: white; white-space: nowrap; }
         .status-scheduled { background-color: var(--primary-light); }
         .status-completed { background-color: var(--secondary); }
         .status-cancelled { background-color: var(--danger); }
         .status-default { background-color: #6c757d; }
         .appointments-list .div-table-cell.appointment-actions > * { margin-left: 5px; }
         .appointments-list .div-table-cell.appointment-actions > *:first-child { margin-left: 0; }
+        .appointments-list .div-table-row .div-table-cell[style*="grid-column"],
+        .appointments-list .div-table-row .div-table-cell[style*="column-span"] {
+            grid-column: 1 / -1;
+            -ms-grid-column: 1;
+            -ms-grid-column-span: 5; /* Adjust '5' to actual number of columns */
+            text-align: center;
+            padding: 20px;
+        }
 
-
-        /* CONSULTATIONS div table specifics */
+        /* Consultations div table specifics */
         .consultations-list .div-table-cell.consultation-date { width: 25%; }
         .consultations-list .div-table-cell.consultation-patient { width: 35%; }
         .consultations-list .div-table-cell.consultation-reason { width: 25%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
@@ -164,82 +278,59 @@
         .consultations-list .div-table-cell.consultation-actions > * { margin-left: 5px; }
         .consultations-list .div-table-cell.consultation-actions > *:first-child { margin-left: 0; }
 
+        /* Prescriptions (Ordonnances) div table specifics */
+        .prescriptions-list .div-table-header > .div-table-cell:nth-child(1) { width: 15%; }
+        .prescriptions-list .div-table-header > .div-table-cell:nth-child(2) { width: 25%; }
+        .prescriptions-list .div-table-header > .div-table-cell:nth-child(3) { width: 15%; text-align: center; }
+        .prescriptions-list .div-table-header > .div-table-cell:nth-child(4) {
+            width: 45%;
+            text-align: center;
+        }
 
-        /* PRESCRIPTIONS (ORDONNANCES) div table specifics */
-        .prescriptions-list .div-table-cell.prescription-date-col { width: 20%; }
-        .prescriptions-list .div-table-cell.prescription-patient-col { width: 30%; }
-        .prescriptions-list .div-table-cell.prescription-meds-count-col { width: 20%; text-align: center; }
-        .prescriptions-list .div-table-cell.prescription-actions-col { width: 30%; text-align: right; white-space: nowrap; }
-        .prescriptions-list .div-table-cell.prescription-actions-col > * { margin-left: 5px; }
-        .prescriptions-list .div-table-cell.prescription-actions-col > *:first-child { margin-left: 0; }
+        .prescriptions-list .div-table-row > .div-table-cell:nth-child(1) { width: 15%; }
+        .prescriptions-list .div-table-row > .div-table-cell:nth-child(2) { width: 25%; }
+        .prescriptions-list .div-table-row > .div-table-cell:nth-child(3) { width: 15%; text-align: center; padding: 12px 0px; }
 
+        .prescriptions-list .div-table-row > .div-table-cell.prescription-actions {
+            width: 45%;                /* This cell has 45% of the row's width */
+            display: flex;  /* Make it a flex container */
+            flex-direction: row;       /* Default, but explicit */
+            flex-wrap: nowrap;         /* Prevent buttons from wrapping */
+            justify-content: center;   /* Center the flex items (buttons) *within this cell* */
+            align-items: center;       /* Vertically align them */
+            gap: 5px;
+            text-align: center;
+        }
+
+        /* The following styles for buttons and form should remain the same */
+        .prescriptions-list .div-table-cell.prescription-actions .btn,
+        .prescriptions-list .div-table-cell.prescription-actions form {
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin: 0;
+        }
+
+        .prescriptions-list .div-table-cell.prescription-actions form {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .prescriptions-list .div-table-row .div-table-cell[data-empty-row="true"] {
+            text-align: center;
+            padding: 20px;
+        }
 
         /* Patient Cards Styles */
-        .patient-cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
-            gap: 20px;
-        }
-        .patient-card {
-            background-color: var(--bg-white);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Ensure consistency if content overflows */
-        }
-        .patient-card-header {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background-color: var(--bg-light); /* Light header background */
-            border-bottom: 1px solid #eee;
-        }
-        .patient-avatar-sm {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--primary-light);
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-right: 15px;
-            text-transform: uppercase;
-        }
-        .patient-name {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        .patient-card-body {
-            padding: 15px;
-            font-size: 0.9rem;
-            color: #555;
-            flex-grow: 1; /* Allows body to take available space */
-        }
-        .patient-info-item {
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .patient-info-item .info-label {
-            font-weight: 500;
-            color: var(--text-dark);
-            margin-right: 5px;
-        }
-        .patient-info-item .info-value {
-            text-align: right;
-        }
-        .patient-card-footer {
-            padding: 15px;
-            background-color: var(--bg-light);
-            border-top: 1px solid #eee;
-            text-align: right;
-        }
+        .patient-cards-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .patient-card { background-color: var(--bg-white); border-radius: 8px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+        .patient-card-header { display: flex; align-items: center; padding: 15px; background-color: var(--bg-light); border-bottom: 1px solid #eee; }
+        .patient-avatar-sm { width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary-light); color: var(--text-light); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 15px; text-transform: uppercase; }
+        .patient-name { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-dark); }
+        .patient-card-body { padding: 15px; font-size: 0.9rem; color: #555; flex-grow: 1; }
+        .patient-info-item { margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .patient-info-item .info-label { font-weight: 500; color: var(--text-dark); margin-right: 5px; }
+        .patient-info-item .info-value { text-align: right; }
+        .patient-card-footer { padding: 15px; background-color: var(--bg-light); border-top: 1px solid #eee; text-align: right; }
 
         /* Messagerie Styles */
         .messagerie-container { display: grid; grid-template-columns: 300px 1fr; gap: 20px; height: calc(100vh - 220px); background-color: var(--bg-white); border-radius: 10px; box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; }
@@ -262,47 +353,58 @@
         .message-input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; margin-right: 10px; }
         .send-btn { padding: 10px 20px; }
 
-
-        /* Ordonnance Form (Create Prescription) Specifics */
-        .ordonnance-form { /* Already defined: display: grid; grid-template-columns: 1fr 1fr; gap: 20px; */ }
-        .medication-item-row { /* Used in create/edit prescription for dynamic rows */
-            /* border: 1px solid #eee; padding: 1rem; margin-bottom: 1rem; border-radius: .25rem; */
-            /* These are now applied via utility classes in the ordonnances.blade.php */
-        }
-        .medication-item-row .row { /* Ensure nested rows behave well */
-            margin-right: -5px; margin-left: -5px; /* Tighter gutters if needed */
-        }
+        /* Ordonnance Form (Create/Edit Prescription) Specifics */
+        .medication-item-row .row { margin-right: -5px; margin-left: -5px; } /* For tighter grid in medication rows */
         .medication-item-row .col-md-6,
-        .medication-item-row .col-md-4 {
-            padding-right: 5px; padding-left: 5px; /* Tighter gutters */
-        }
-
+        .medication-item-row .col-md-4 { padding-right: 5px; padding-left: 5px; } /* For tighter grid in medication rows */
 
         /* Modals (Generic) */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; visibility: visible; }
-        .modal { width: 90%; /* Default width */ background-color: var(--bg-white); border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; transform: translateY(-20px) scale(0.95); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+        .modal { width: 90%; background-color: var(--bg-white); border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; transform: translateY(-20px) scale(0.95); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
         .modal-overlay.active .modal { transform: translateY(0) scale(1); opacity: 1; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; background-color: var(--primary); color: white; } /* Adjusted padding */
-        .modal-title { font-size: 1.2rem; font-weight: 500; } /* Adjusted font size */
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; background-color: var(--primary); color: white; }
+        .modal-title { font-size: 1.2rem; font-weight: 500; }
         .modal-close { font-size: 1.5rem; cursor: pointer; background: none; border: none; color: white; line-height: 1; padding: 0.25rem 0.5rem; }
-        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; } /* Adjusted padding */
+        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 20px; border-top: 1px solid #eee; background-color: var(--bg-light); }
-        .modal-form { display: grid; grid-template-columns: 1fr; gap: 15px; } /* Default to single column for modals */
-        @media (min-width: 768px) { /* Two columns on larger screens for modal forms */
-            .modal-form { grid-template-columns: 1fr 1fr; }
-        }
+        .modal-form { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 768px) { .modal-form { grid-template-columns: 1fr 1fr; } }
         .modal-form .form-group.full-width { grid-column: span 2; }
 
-
-        /* Styles for Appointment Filters */
+        /* Styles for Appointment Filters & Alerts */
         .form-inline { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
         .form-inline .form-group { margin-right: 10px; margin-bottom: 10px; }
         .form-inline .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem; }
-        .ml-2 { margin-left: .5rem !important; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
         .alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; padding: 1rem 1.25rem; font-size: 1.1rem;}
         .alert-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; padding: 1rem 1.25rem; font-size: 1.1rem;}
+
+        /* Pagination Centering */
+        .pagination {
+            justify-content: center;
+        }
+
+        /* Recent Activities List */
+        .recent-activities-container { /* Placeholder if specific container styles needed */ }
+        .recent-activities-list .div-table-cell { font-size: 0.9rem; }
+        .recent-activities-list .activity-date-col { width: 20%; }
+        .recent-activities-list .activity-type-col { width: 15%; text-align: center;}
+        .recent-activities-list .activity-patient-col { width: 25%; }
+        .recent-activities-list .activity-desc-col { width: 25%; }
+        .recent-activities-list .activity-status-col { width: 15%; text-align: center; }
+
+        .badge.activity-type-consultation { background-color: var(--info); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em;}
+        .badge.activity-type-rendez-vous { background-color: var(--primary-light); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em;}
+        .badge.activity-type-ordonnance { background-color: var(--warning); color: var(--text-dark); padding: 3px 8px; border-radius: 4px; font-size: 0.8em;}
+
+        .recent-activities-list .status-termine,
+        .recent-activities-list .status-completed { background-color: var(--secondary); }
+        .recent-activities-list .status-a-venir,
+        .recent-activities-list .status-scheduled { background-color: var(--primary-light); }
+        .recent-activities-list .status-annule,
+        .recent-activities-list .status-cancelled { background-color: var(--danger); }
+        .recent-activities-list .status-delivree { background-color: #6f42c1; color:white; }
     </style>
 </head>
 <body>
@@ -322,18 +424,70 @@
             </div>
             @endauth
             <ul class="sidebar-menu">
-                <li><a href="#" class="menu-link active" data-section="dashboard"><div class="menu-icon">📊</div><span>Tableau de bord</span></a></li>
-                <li><a href="#" class="menu-link" data-section="appointments"><div class="menu-icon">📅</div><span>Rendez-vous</span></a></li>
-                <li><a href="#" class="menu-link" data-section="patients"><div class="menu-icon">👥</div><span>Patients</span></a></li>
-                <li><a href="#" class="menu-link" data-section="consultations"><div class="menu-icon">🗣</div><span>Consultations</span></a></li>
-                <li><a href="#" class="menu-link" data-section="ordonnances"><div class="menu-icon">💊</div><span>Ordonnances</span></a></li>
-                <li><a href="#" class="menu-link" data-section="messagerie"><div class="menu-icon">💬</div><span>Messagerie</span></a></li>
-                <li><a href="#" class="menu-link" data-section="parametres"><div class="menu-icon">⚙️</div><span>Profile</span></a></li>
+                <li>
+                    <a href="#" class="menu-link active" data-section="dashboard">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/tableau_de_bord.png') }}" alt="Dashboard Icon">
+                        </div>
+                        <span>Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="appointments">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/rendez_vous.png') }}" alt="Appointments Icon">
+                        </div>
+                        <span>Rendez-vous</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="patients">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/patients.png') }}" alt="Patients Icon">
+                        </div>
+                        <span>Patients</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="consultations">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/consultations.png') }}" alt="Consultations Icon">
+                        </div>
+                        <span>Consultations</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="ordonnances">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/ordonnances.png') }}" alt="Ordonnances Icon">
+                        </div>
+                        <span>Ordonnances</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="messagerie">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/messages.png') }}" alt="Messagerie Icon">
+                        </div>
+                        <span>Messagerie</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="menu-link" data-section="parametres">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/profile.png') }}" alt="Profile Icon">
+                        </div>
+                        <span>Profile</span>
+                    </a>
+                </li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}" id="logout-form-doctor-dashboard" style="display: none;">@csrf</form>
                     <a href="{{ route('logout') }}" class="menu-link"
-                       onclick="event.preventDefault(); document.getElementById('logout-form-doctor-dashboard').submit();">
-                        <div class="menu-icon">🚪</div><span>Déconnexion</span>
+                    onclick="event.preventDefault(); document.getElementById('logout-form-doctor-dashboard').submit();">
+                        <div class="menu-icon">
+                            <img src="{{ asset('assets/sidebar/logout.png') }}" alt="Logout Icon">
+                        </div>
+                        <span>Déconnexion</span>
                     </a>
                 </li>
             </ul>
@@ -364,7 +518,7 @@
                 @endif
 
                 {{-- Validation Errors --}}
-                @php
+                {{-- @php
                     $openModal = session('open_modal_on_load');
                     $specificErrorBag = null; // Initialize to null
                     if ($openModal) {
@@ -381,9 +535,9 @@
                         }
                         // Add other modal-specific error bags here if needed
                     }
-                @endphp
+                @endphp --}}
 
-                @if ($specificErrorBag && $errors->hasBag($specificErrorBag) && $errors->getBag($specificErrorBag)->any())
+                {{-- @if ($specificErrorBag && $errors->hasBag($specificErrorBag) && $errors->getBag($specificErrorBag)->any())
                     <div class="alert alert-danger">
                         <strong>Erreurs (Bag: {{ $specificErrorBag }}):</strong>
                         <ul>
@@ -410,7 +564,7 @@
                             @endforeach
                         </ul>
                     </div>
-                @endif
+                @endif --}}
 
 
                 @include('doctor.dashboard')

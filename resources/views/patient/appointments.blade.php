@@ -46,7 +46,7 @@
                                     if ($appointmentDateFieldSource && $appointment->status) {
                                         $apptDateTime = \Illuminate\Support\Carbon::parse($appointmentDateFieldSource);
                                         $now = \Illuminate\Support\Carbon::now();
-                                        $cancellableStatuses = ['scheduled', 'pending', 'confirmed'];
+                                        $cancellableStatuses = ['scheduled'];
                                         $statusIsOkayForCancel = in_array(strtolower($appointment->status), $cancellableStatuses);
                                         $isAppointmentInFuture = $apptDateTime->isAfter($now);
                                         $twoHoursFromNow = $now->copy()->addHours(2);
