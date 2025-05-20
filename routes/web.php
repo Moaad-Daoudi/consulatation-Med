@@ -30,7 +30,14 @@ use App\Http\Controllers\Doctor\PrescriptionController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $doctors_data = User::whereHas('role', function ($query) {
+                            $query->where('name', 'doctor');
+                        })
+                        ->whereHas('doctor') // Ensure the doctor profile exists
+                        ->with('doctor') // Eager load the doctor relationship
+                        ->get();
+
+    return view('welcome', ['doctors_list' => $doctors_data]);
 });
 
 Route::get('/dashboard', function (Request $request) {
@@ -333,9 +340,7 @@ Route::middleware(['auth', 'verified', 'role:doctor'])->prefix('doctor')->name('
 
 // --- Profile Routes ---
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';

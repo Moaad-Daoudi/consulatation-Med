@@ -42,9 +42,11 @@
         <div class="container">
             <h1>La santé à portée de clic</h1>
             <p>Consultez votre médecin en ligne, prenez rendez-vous et accédez à votre dossier médical depuis chez vous.</p>
-            @if (Route::has('register'))
-                <a href="{{ route('register') }}" class="btn btn-secondary">Créer un compte</a>
-            @endif
+            @guest {{-- Show only if user is not logged in --}}
+                @if (Route::has('register'))
+                    <a href="{{ route('register') }}" class="btn btn-secondary">Créer un compte</a>
+                @endif
+            @endguest
         </div>
     </section>
 
@@ -92,93 +94,57 @@
         <div class="container">
             <h2 class="section-title">Nos médecins</h2>
             <div class="doctors-grid">
-                <div class="doctor-card">
-                    <div class="doctor-img"><img src="{{ asset('assets/doctors/Sophie_Martin.png') }}" alt="Dr. Sophie Martin"></div>
-                    <div class="doctor-info">
-                        <h3 class="doctor-name">Dr. Sophie Martin</h3>
-                        <div class="doctor-specialty">Médecine générale</div>
-                        <p class="doctor-bio">Spécialisée en médecine préventive avec plus de 15 ans d'expérience. Disponible pour des consultations en ligne et en cabinet.</p>
-                        <div class="doctor-contact">
-                            <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> sophie.martin@mediconsult.fr</p>
-                            <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> +33 6 12 34 56 78</p>
-                            <p><img src="{{ asset('assets/icons/facebook.png') }}" alt="Facebook" class="contact-icon"> @DrSophieMartin</p>
-                            <p><img src="{{ asset('assets/icons/instagram.png') }}" alt="Instagram" class="contact-icon"> @dr.sophie_martin</p>
+                {{-- Check if there are any doctors to display --}}
+                @if(isset($doctors_list) && $doctors_list->count() > 0)
+                    @foreach($doctors_list as $doctor_user)
+                        <div class="doctor-card">
+                            <div class="doctor-img">
+                                @if($doctor_user->photo_path)
+                                    <img src="{{ asset('storage/' . $doctor_user->photo_path) }}" alt="Dr. {{ $doctor_user->name }}">
+                                @else
+                                    {{-- Make sure you have a default_doctor.png in public/assets/doctors/ --}}
+                                    <img src="{{ asset('assets/doctors/default_doctor.png') }}" alt="Dr. {{ $doctor_user->name }}">
+                                @endif
+                            </div>
+                            <div class="doctor-info">
+                                <h3 class="doctor-name">Dr. {{ $doctor_user->name }}</h3>
+                                <div class="doctor-specialty">
+                                    {{-- Access specialty from the related doctor model --}}
+                                    {{ $doctor_user->doctor->specialty ?? 'Spécialité non définie' }}
+                                </div>
+                                <p class="doctor-bio">
+                                    {{-- Access bio from the related doctor model --}}
+                                    {{ $doctor_user->doctor->bio ?? 'Aucune biographie disponible.' }}
+                                </p>
+                                <div class="doctor-contact">
+                                    <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> {{ $doctor_user->email }}</p>
+                                    @if($doctor_user->phone_number)
+                                        <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> {{ $doctor_user->phone_number }}</p>
+                                    @endif
+                                    {{-- Check if practice_address exists and is not the default "Vide" --}}
+                                    @if(isset($doctor_user->doctor->practice_address) && $doctor_user->doctor->practice_address !== 'Vide' && $doctor_user->doctor->practice_address !== null)
+                                        <p><img src="{{ asset('assets/icons/location.png') }}" alt="Adresse" class="contact-icon"> {{ $doctor_user->doctor->practice_address }}</p>
+                                        {{-- Ensure you have location.png in public/assets/icons/ --}}
+                                    @endif
+                                    {{-- Add social media links here if you store them in the database --}}
+                                </div>
+                                {{-- Button to take action, e.g., view profile or book appointment --}}
+                                {{-- For now, it links to login, assuming booking requires login --}}
+                                <a href="{{ route('login') }}" class="btn btn-primary btn-sm" style="margin-top: 15px;">Prendre RDV</a>
+                                {{--
+                                    Later, you might have a public profile page for each doctor:
+                                    <a href="{{ route('doctor.public.profile', $doctor_user->id) }}" class="btn btn-primary btn-sm" style="margin-top: 15px;">Voir Profil</a>
+                                --}}
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="doctor-card">
-                    <div class="doctor-img"><img src="{{ asset('assets/doctors/Thomas_Dubois.png') }}" alt="Dr. Thomas Dubois"></div>
-                    <div class="doctor-info">
-                        <h3 class="doctor-name">Dr. Thomas Dubois</h3>
-                        <div class="doctor-specialty">Cardiologie</div>
-                        <p class="doctor-bio">Cardiologue certifié avec expertise en télémédecine cardiaque. Suivi à distance des patients souffrant de maladies cardiovasculaires.</p>
-                        <div class="doctor-contact">
-                            <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> thomas.dubois@mediconsult.fr</p>
-                            <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> +33 6 23 45 67 89</p>
-                            <p><img src="{{ asset('assets/icons/facebook.png') }}" alt="Facebook" class="contact-icon"> @DrThomasDubois</p>
-                            <p><img src="{{ asset('assets/icons/instagram.png') }}" alt="Instagram" class="contact-icon"> @dr.thomas_cardio</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="doctor-card">
-                    <div class="doctor-img"><img src="{{ asset('assets/doctors/Nadia_Benali.png') }}" alt="Dr. Nadia Benali"></div>
-                    <div class="doctor-info">
-                        <h3 class="doctor-name">Dr. Nadia Benali</h3>
-                        <div class="doctor-specialty">Pédiatrie</div>
-                        <p class="doctor-bio">Spécialiste en pédiatrie avec une approche bienveillante. Consultation pour les enfants de tous âges et conseils aux parents.</p>
-                        <div class="doctor-contact">
-                            <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> nadia.benali@mediconsult.fr</p>
-                            <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> +33 6 34 56 78 90</p>
-                            <p><img src="{{ asset('assets/icons/facebook.png') }}" alt="Facebook" class="contact-icon"> @DrNadiaBenali</p>
-                            <p><img src="{{ asset('assets/icons/instagram.png') }}" alt="Instagram" class="contact-icon"> @dr.nadia_pediatre</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="doctor-card">
-                    <div class="doctor-img"><img src="{{ asset('assets/doctors/Antoine_Leroux.png') }}" alt="Dr. Antoine Leroux"></div>
-                    <div class="doctor-info">
-                        <h3 class="doctor-name">Dr. Antoine Leroux</h3>
-                        <div class="doctor-specialty">Dermatologie</div>
-                        <p class="doctor-bio">Expert en dermatologie clinique et esthétique. Consultation à distance possible pour les problèmes cutanés courants.</p>
-                        <div class="doctor-contact">
-                            <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> antoine.leroux@mediconsult.fr</p>
-                            <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> +33 6 45 67 89 01</p>
-                            <p><img src="{{ asset('assets/icons/facebook.png') }}" alt="Facebook" class="contact-icon"> @DrAntoineLeroux</p>
-                            <p><img src="{{ asset('assets/icons/instagram.png') }}" alt="Instagram" class="contact-icon"> @dr.antoine_derma</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="doctor-card">
-                    <div class="doctor-img"><img src="{{ asset('assets/doctors/Julie_Moreau.jpg') }}" alt="Dr. Julie Moreau"></div>
-                    <div class="doctor-info">
-                        <h3 class="doctor-name">Dr. Julie Moreau</h3>
-                        <div class="doctor-specialty">Psychiatrie</div>
-                        <p class="doctor-bio">Psychiatre spécialisée en thérapies à distance. Accompagnement pour troubles anxieux, dépression et gestion du stress.</p>
-                        <div class="doctor-contact">
-                            <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> julie.moreau@mediconsult.fr</p>
-                            <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> +33 6 56 78 90 12</p>
-                            <p><img src="{{ asset('assets/icons/facebook.png') }}" alt="Facebook" class="contact-icon"> @DrJulieMoreau</p>
-                            <p><img src="{{ asset('assets/icons/instagram.png') }}" alt="Instagram" class="contact-icon"> @dr.julie_psy</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="doctor-card">
-                    <div class="doctor-img"><img src="{{ asset('assets/doctors/Michel_Fournier.jpg') }}" alt="Dr. Michel Fournier"></div>
-                    <div class="doctor-info">
-                        <h3 class="doctor-name">Dr. Michel Fournier</h3>
-                        <div class="doctor-specialty">Endocrinologie</div>
-                        <p class="doctor-bio">Spécialiste du diabète et des troubles hormonaux. Suivi personnalisé et conseils nutritionnels pour les patients.</p>
-                        <div class="doctor-contact">
-                            <p><img src="{{ asset('assets/icons/email.png') }}" alt="Email" class="contact-icon"> michel.fournier@mediconsult.fr</p>
-                            <p><img src="{{ asset('assets/icons/phone.png') }}" alt="Téléphone" class="contact-icon"> +33 6 67 89 01 23</p>
-                            <p><img src="{{ asset('assets/icons/facebook.png') }}" alt="Facebook" class="contact-icon"> @DrMichelFournier</p>
-                            <p><img src="{{ asset('assets/icons/instagram.png') }}" alt="Instagram" class="contact-icon"> @dr.michel_endo</p>
-                        </div>
-                    </div>
-                </div>
+                    @endforeach
+                @else
+                    <p style="text-align: center; grid-column: 1 / -1; padding: 20px;">Aucun médecin n'est actuellement disponible sur notre plateforme.</p>
+                @endif
             </div>
         </div>
     </section>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -193,28 +159,32 @@
                         <li><a href="#home">Accueil</a></li>
                         <li><a href="#services">Services</a></li>
                         <li><a href="#doctors">Médecins</a></li>
-                        <li><a href="{{ route('login') }}">Connexion</a></li>
-                        <li><a href="{{ route('register') }}">Inscription</a></li>
+                        @guest
+                            <li><a href="{{ route('login') }}">Connexion</a></li>
+                            <li><a href="{{ route('register') }}">Inscription</a></li>
+                        @else
+                            <li><a href="{{ route('dashboard') }}">Mon Espace</a></li>
+                        @endguest
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section" id="contact"> {{-- Added id here as per your nav link --}}
                     <h3>Contact</h3>
-                    <ul class="footer-links" id="contact">
-                        <li>Email: mediconsult@gmail.com</li>
-                        <li>Téléphone: +212 6 23 45 67 89</li>
-                        <li>Adresse: 123 Avenue de la Santé, Al Hoceima</li>
+                    <ul class="footer-links">
+                        <li>Email: mediconsult@example.com</li> {{-- Use a placeholder or real email --}}
+                        <li>Téléphone: +212 6 00 00 00 00</li> {{-- Use a placeholder or real phone --}}
+                        <li>Adresse: 123 Avenue de la Santé, Ville, Maroc</li> {{-- Use a placeholder or real address --}}
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h3>Légal</h3>
                     <ul class="footer-links">
-                        <li><a >Politique de confidentialité</a></li>
-                        <li><a >Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li> {{-- Link to actual pages later --}}
+                        <li><a href="#">Conditions d'utilisation</a></li> {{-- Link to actual pages later --}}
                     </ul>
                 </div>
             </div>
             <div class="copyright">
-                <p>© 2025 MediConsult. Tous droits réservés.</p>
+                <p>© {{ date('Y') }} MediConsult. Tous droits réservés.</p>
             </div>
         </div>
     </footer>

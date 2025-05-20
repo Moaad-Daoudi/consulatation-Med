@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',
+        'photo_path',
         'role_id',
     ];
     /**
@@ -60,7 +62,7 @@ class User extends Authenticatable
         return $this->hasOne(Patient::class);
     }
 
-    
+
     public function doctorConsultations()
     {
         return $this->hasMany(Consultation::class, 'doctor_id');

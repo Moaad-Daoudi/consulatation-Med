@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('specialty');
-            $table->text('bio')->nullable();
-            $table->text('license_numbre');
+            $table->string('specialty')->default('Non specialisé');
+            $table->text('bio')->nullable()->default('Vide');
+            $table->text('practice_address')->nullable()->default('Vide');
             $table->timestamps();
         });
     }
