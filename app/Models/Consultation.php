@@ -14,28 +14,24 @@ class Consultation extends Model
         'patient_id',
         'appointment_id',
         'consultation_date',
-        'reason_for_visit',  // Added (short summary)
-        'symptoms',         // Detailed description
-        'notes',            // Doctor's observations
-        'diagnosis',        // Preliminary or final diagnosis
-        // Removed 'prescription' (will be added later)
-        // Removed 'follow_up_date' (can be added in a separate step)
+        'reason_for_visit',
+        'symptoms',
+        'notes',
+        'diagnosis',
     ];
 
-    // Cast consultation_date as datetime
     protected $casts = [
         'consultation_date' => 'datetime',
     ];
 
-    // Relationships
     public function doctor()
     {
-        return $this->belongsTo(User::class, 'doctor_id'); // Assuming doctors are Users
+        return $this->belongsTo(User::class, 'doctor_id');
     }
 
     public function patient()
     {
-        return $this->belongsTo(User::class, 'patient_id'); // Assuming patients are Users
+        return $this->belongsTo(User::class, 'patient_id'); 
     }
 
     public function appointment()

@@ -45,11 +45,6 @@
                     @else
                         <p>Aucun médicament spécifique listé pour cette ordonnance (vérifiez les notes générales).</p>
                     @endif
-
-                    <div class="prescription-actions mt-3 text-end">
-                        <button type="button" class="btn btn-sm btn-secondary me-2" onclick="alert('Fonctionnalité de téléchargement PDF à venir.');">Télécharger PDF</button>
-                        {{-- <button type="button" class="btn btn-sm btn-primary" onclick="alert('Fonctionnalité d\'envoi à la pharmacie à venir.');">Envoyer à la pharmacie</button> --}}
-                    </div>
                 </div>
             @endforeach
         @else
@@ -98,9 +93,6 @@
                             </ul>
                         </div>
                     @endif
-                    <div class="prescription-actions mt-3 text-end">
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="alert('Fonctionnalité de téléchargement PDF à venir.');">Télécharger PDF</button>
-                    </div>
                 </div>
             @endforeach
         @else

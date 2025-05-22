@@ -33,17 +33,6 @@
                 <p>Ordonnances ce mois</p>
             </div>
         </div>
-
-        {{-- Card 4: Nouveaux messages --}}
-        <div class="stat-card card-messages">
-            <div class="stat-icon-img-only">
-                <img src="{{ asset('assets/dashboard/messages.png') }}" alt="Messages">
-            </div>
-            <div class="stat-info">
-                <h3>{{ $newMessagesCount ?? 0 }}</h3> {{-- Ensure $newMessagesCount is passed --}}
-                <p>Nouveaux messages</p>
-            </div>
-        </div>
     </div>
 
     {{-- Recent Activities Section --}}

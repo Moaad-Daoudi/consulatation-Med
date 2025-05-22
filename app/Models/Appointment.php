@@ -13,14 +13,13 @@ class Appointment extends Model
     protected $fillable = [
         'patient_id',
         'doctor_id',
-        'appointment_datetime', // Ensure this matches your DB column
+        'appointment_datetime',
         'status',
-        'notes',                // For appointment details/reason
-        // 'duration', // REMOVED
+        'notes',
     ];
 
     protected $casts = [
-        'appointment_datetime' => 'datetime', // Ensure this matches your DB column
+        'appointment_datetime' => 'datetime', 
     ];
 
     public function patient(): BelongsTo

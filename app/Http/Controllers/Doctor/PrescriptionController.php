@@ -17,33 +17,22 @@ use App\Models\Appointment;
 
 class PrescriptionController extends Controller
 {
-    /**
-     * Display a listing of the resource. (History of prescriptions for the doctor)
-     * This will be loaded via the main dashboard route for the SPA section.
-     */
     public function index()
     {
-        // Data for the history list will be fetched by the main dashboard route
-        // and passed to the view. This method isn't strictly needed for SPA display
-        // but is good for API or traditional page.
         $prescriptions = Prescription::where('doctor_id', Auth::id())
             ->with(['patient', 'items'])
             ->latest('prescription_date')
             ->paginate(10);
-        // In SPA, this data is usually fetched in the dashboard route.
-        return view('doctor.prescriptions.index_spa_partial', compact('prescriptions')); // Or however you handle SPA sections
+        return view('doctor.prescriptions.index_spa_partial', compact('prescriptions'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'patient_id' => 'required|exists:users,id',
             'prescription_date' => 'required|date',
             'general_notes' => 'nullable|string',
-            'consultation_id' => 'nullable|exists:consultations,id', // Optional: link to consultation
+            'consultation_id' => 'nullable|exists:consultations,id',
             'medications' => 'required|array|min:1',
             'medications.*.name' => 'required|string|max:255',
             'medications.*.dosage' => 'nullable|string|max:255',
@@ -58,16 +47,14 @@ class PrescriptionController extends Controller
             'medications.*.name.required' => 'Le nom du médicament est requis.',
         ]);
 
-        // For SPA, redirecting with errors needs specific handling to reopen modal/section
         $errorBagName = 'prescriptionCreate';
-        $sectionToReopen = 'ordonnances'; // Your SPA section ID
+        $sectionToReopen = 'ordonnances';
 
         if ($validator->fails()) {
             return redirect()->route('dashboard')
                 ->withErrors($validator, $errorBagName)
                 ->withInput()
                 ->with('active_section_on_load', $sectionToReopen);
-                // ->with('open_modal_on_load', 'createPrescriptionModal'); // If you use a modal
         }
 
         DB::beginTransaction();
@@ -105,46 +92,31 @@ class PrescriptionController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource. (Show/View Prescription)
-     * For SPA, this might populate a modal.
-     */
     public function show(Prescription $prescription)
     {
         if ($prescription->doctor_id !== Auth::id()) {
             abort(403);
         }
-        $prescription->load(['patient', 'items', 'consultation']); // Eager load needed data
-        // For SPA, you might return JSON or redirect to dashboard with data to open a modal
-        return response()->json($prescription); // Example for AJAX modal
+        $prescription->load(['patient', 'items', 'consultation']);
+        return response()->json($prescription);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     * For SPA, this data would populate an edit modal.
-     */
     public function edit(Prescription $prescription)
     {
         if ($prescription->doctor_id !== Auth::id()) {
             abort(403);
         }
         $prescription->load(['patient', 'items']);
-        // For SPA, redirect to dashboard signaling to open edit modal with this data
-        // This is just a placeholder for traditional forms.
-        // The main dashboard route would provide patientsForModal
         $patientsForModal = User::whereHas('role', fn($q) => $q->where('name', 'patient'))->orderBy('name')->get(['id', 'name']);
 
         return redirect()->route('dashboard')
-            ->with('editing_prescription', $prescription->toArray()) // Send all data needed
-            ->with('patientsForModal', $patientsForModal) // If needed for patient dropdown in edit
+            ->with('editing_prescription', $prescription->toArray())
+            ->with('patientsForModal', $patientsForModal)
             ->with('active_section_on_load', 'ordonnances')
-            ->with('open_modal_on_load', 'editPrescriptionModal'); // Signal JS
+            ->with('open_modal_on_load', 'editPrescriptionModal');
     }
 
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Prescription $prescription)
     {
         if ($prescription->doctor_id !== Auth::id()) {
@@ -173,7 +145,7 @@ class PrescriptionController extends Controller
                 ->withErrors($validator, $errorBagName)
                 ->withInput()
                 ->with('active_section_on_load', $sectionToReopen)
-                ->with('open_modal_on_load', 'editPrescriptionModal') // Signal JS
+                ->with('open_modal_on_load', 'editPrescriptionModal')
                 ->with('prescription_id_for_error_bag', $prescription->id);
         }
 
@@ -191,7 +163,6 @@ class PrescriptionController extends Controller
 
             foreach ($request->medications as $medData) {
                 if (!empty($medData['id']) && in_array($medData['id'], $existingItemIds)) {
-                    // Update existing item
                     $item = PrescriptionItem::find($medData['id']);
                     if ($item) {
                         $item->update([
@@ -204,7 +175,6 @@ class PrescriptionController extends Controller
                         $newItemIds[] = $item->id;
                     }
                 } else {
-                    // Create new item
                     $item = $prescription->items()->create([
                         'medication_name' => $medData['name'],
                         'dosage' => $medData['dosage'],
@@ -216,7 +186,6 @@ class PrescriptionController extends Controller
                 }
             }
 
-            // Delete items that were removed from the form
             $itemsToDelete = array_diff($existingItemIds, $newItemIds);
             PrescriptionItem::destroy($itemsToDelete);
 
@@ -238,9 +207,6 @@ class PrescriptionController extends Controller
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Prescription $prescription)
     {
         if ($prescription->doctor_id !== Auth::id()) {
@@ -250,7 +216,7 @@ class PrescriptionController extends Controller
         }
 
         try {
-            $prescription->delete(); // Items will be deleted due to onDelete('cascade')
+            $prescription->delete();
             return redirect()->route('dashboard')
                 ->with('success', 'Ordonnance supprimée avec succès.')
                 ->with('active_section_on_load', 'ordonnances');
@@ -264,33 +230,16 @@ class PrescriptionController extends Controller
 
     public function getPatientConsultationsForLinking(Request $request, User $patient)
     {
-        // Authorization: Ensure the logged-in doctor can access this patient's info.
-        // This is a basic check; you might have more specific patient-doctor relationship logic.
-        if (Auth::user()->role->name === 'doctor' && !Consultation::where('patient_id', $patient->id)->where('doctor_id', Auth::id())->exists() && !Appointment::where('patient_id', $patient->id)->where('doctor_id', Auth::id())->exists() ) {
-            // A simple check: if the doctor has no consultations or appointments with this patient.
-            // You might want a direct "is my patient" check.
-            // For now, let's assume if the doctor can select the patient, they can see their consultations.
-        }
-
         if ($patient->role->name !== 'patient') {
             return response()->json(['error' => 'Invalid user type provided for patient.'], 400);
         }
 
-        // Fetch consultations for the patient that belong to the currently authenticated doctor
         $query = Consultation::where('patient_id', $patient->id)
-            ->where('doctor_id', Auth::id()); // CRUCIAL: Only for the current doctor
+            ->where('doctor_id', Auth::id());
 
-        // Further considerations for filtering:
-        // 1. Consultations not already linked to a prescription (if one-to-one).
-        //    This would require 'prescriptions' table to have 'consultation_id' as unique.
-        //    Or if 'consultations' table has a 'prescription_id' to mark it as "used by a prescription".
-        //    For now, we'll fetch recent ones.
-        //    $query->whereDoesntHave('prescription'); // If using the hasOne relationship from Consultation to Prescription
+        $query->orderBy('consultation_date', 'desc');
 
-        // 2. Date range (e.g., recent)
-        $query->orderBy('consultation_date', 'desc'); // Show most recent first
-
-        $consultations = $query->limit(30) // Sensible limit
+        $consultations = $query->limit(30)
             ->get(['id', 'consultation_date', 'reason_for_visit']);
 
         return response()->json($consultations);

@@ -157,7 +157,6 @@ class AppointmentController extends Controller
                 $errorMsg = 'Statut ne permet pas suppression par docteur.';
             }
         } elseif ($isPatient && $appointment->patient_id === $user->id) {
-            // Modified condition: Only check if appointment is in the future
             if (in_array($appointment->status, ['scheduled']) && $apptDateTime->isFuture()) {
                 $canDelete = true;
             } else {

@@ -11,19 +11,76 @@
                 <span class="info-label">Email:</span>
                 <span class="info-value">{{ Auth::user()->email ?? 'N/A' }}</span>
             </div>
-            {{--
             <div class="info-block">
                 <span class="info-label">Téléphone:</span>
-                <span class="info-value">{{ Auth::user()->phone ?? 'Non renseigné' }}</span>
+                <span class="info-value">{{ Auth::user()->phone_number ?? 'Non renseigné' }}</span>
             </div>
             <div class="info-block">
                 <span class="info-label">Date de naissance:</span>
-                <span class="info-value">{{ Auth::user()->date_of_birth ? \Carbon\Carbon::parse(Auth::user()->date_of_birth)->format('d/m/Y') : 'Non renseignée' }}</span>
+                <span class="info-value">
+                    @if(Auth::user()->patient && Auth::user()->patient->date_of_birth)
+                        {{ \Carbon\Carbon::parse(Auth::user()->patient->date_of_birth)->format('d/m/Y') }}
+                    @else
+                        Non renseignée
+                    @endif
+                </span>
             </div>
-            --}}
+            <div class="info-block">
+                <span class="info-label">Sexe:</span>
+                <span class="info-value">
+                    @if(Auth::user()->patient && Auth::user()->patient->gender)
+                        @if(Auth::user()->patient->gender === 'male')
+                            Homme
+                        @elseif(Auth::user()->patient->gender === 'female')
+                            Femme
+                        @elseif(Auth::user()->patient->gender === 'other')
+                            Autre
+                        @else
+                            {{ ucfirst(Auth::user()->patient->gender) }} {{-- Fallback for other values --}}
+                        @endif
+                    @else
+                        Non renseigné
+                    @endif
+                </span>
+            </div>
+            <div class="info-block">
+                <span class="info-label">Adresse Postale:</span>
+                <span class="info-value">
+                    {{-- Assuming 'address' column exists on the Patient model --}}
+                    {{ optional(Auth::user()->patient)->address ?? 'Non renseignée' }}
+                </span>
+            </div>
+             <div class="info-block">
+                <span class="info-label">Téléphone d'urgence:</span>
+                <span class="info-value">
+                    {{ optional(Auth::user()->patient)->emergency_contact ?? 'Non renseigné' }}
+                </span>
+            </div>
         </div>
         <div class="mt-4 text-end">
-            <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-outline-primary">Modifier mes informations</a>
+            {{--
+                IMPORTANT: The route 'profile.edit' is likely not defined if you are using an SPA approach.
+                This button should either be removed, or use JavaScript to switch to the
+                'patient_settings_content' data-section.
+                Example JS approach (rough, would need integration with your existing SPA logic):
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="activateProfileSettingsSection()">
+                    Modifier mes informations
+                </button>
+                <script>
+                    function activateProfileSettingsSection() {
+                        // Find the profile link in the sidebar and click it programmatically
+                        const profileLink = document.querySelector('a[data-section="patient_settings_content"]');
+                        if (profileLink) {
+                            profileLink.click();
+                        }
+                    }
+                </script>
+            --}}
+            {{-- For now, let's make it a button that does nothing or link to the SPA section via JS if desired later --}}
+            <button type="button" class="btn btn-sm btn-outline-primary"
+                    onclick="document.querySelector('a[data-section=\'patient_settings_content\']')?.click();">
+                Modifier mes informations
+            </button>
         </div>
     </div>
 
@@ -71,11 +128,25 @@
     {{-- Section 3: Prescriptions & Treatment History --}}
     <div class="medical-file-section-container">
         <h2 class="section-title">Historique des Ordonnances</h2>
-        @if(isset($patientPrescriptions) && $patientPrescriptions->count() > 0)
-            @foreach($patientPrescriptions as $prescription)
+        {{-- Assuming $activePrescriptions and $pastPrescriptions are combined or you choose one to display here --}}
+        {{-- For simplicity, let's assume you pass a single $allPatientPrescriptions collection for the medical file --}}
+        @php
+            // Combine prescriptions if they are separate, or use a single collection passed from controller
+            // This is just an example; adjust based on how you pass data from the controller
+            if (isset($activePrescriptions) && isset($pastPrescriptions)) {
+                $allPatientPrescriptionsForFile = $activePrescriptions->merge($pastPrescriptions)->sortByDesc('prescription_date');
+            } elseif (isset($allPatientPrescriptions)) { // If controller passes 'allPatientPrescriptions'
+                 $allPatientPrescriptionsForFile = $allPatientPrescriptions;
+            } else {
+                $allPatientPrescriptionsForFile = collect();
+            }
+        @endphp
+
+        @if($allPatientPrescriptionsForFile->count() > 0)
+            @foreach($allPatientPrescriptionsForFile as $prescription)
                 <div class="medical-entry-card">
                     <div class="entry-header">
-                        <h5>Ordonnance du {{ $prescription->prescription_date->format('d/m/Y') }}</h5>
+                        <h5>Ordonnance du {{ \Carbon\Carbon::parse($prescription->prescription_date)->format('d/m/Y') }}</h5>
                         @if($prescription->doctor)
                             <span class="doctor-name">Par Dr. {{ $prescription->doctor->name }}</span>
                         @endif

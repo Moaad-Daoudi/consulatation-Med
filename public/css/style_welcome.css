@@ -220,7 +220,7 @@ nav ul li a:hover {
 .doctor-img {
     width: 100%;
     height: 600px;
-    background-color: #e0e0e0; /* Placeholder color */
+    background-color: #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -351,39 +351,39 @@ footer {
 
 /* Media queries pour responsivité */
 @media (max-width: 768px) {
-    .dashboard, .consultation { /* Assuming these exist */
+    .dashboard, .consultation {
         flex-direction: column;
     }
 
-    .sidebar { /* Assuming this exists */
+    .sidebar {
         width: 100%;
         margin-bottom: 30px;
     }
 
-    .calendar-grid { /* Assuming this exists */
+    .calendar-grid {
         grid-template-columns: repeat(1, 1fr);
     }
 
         .header-container {
             flex-direction: column;
-            padding: 15px; /* Adjust padding */
+            padding: 15px;
         }
 
         nav ul {
-                flex-wrap: wrap; /* Allow nav items to wrap */
-                justify-content: center; /* Center nav items */
-                margin-top: 15px; /* Adjust margin */
-                margin-left: 0; /* Remove left margin */
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 15px;
+                margin-left: 0;
         }
         nav ul li {
-                margin: 5px 10px; /* Adjust spacing for wrapped items */
+                margin: 5px 10px;
         }
         .auth-buttons {
-            margin-top: 15px; /* Add space above buttons on mobile */
+            margin-top: 15px;
         }
 
         .auth-buttons .btn {
-            margin: 0 5px; /* Space between auth buttons */
+            margin: 0 5px; 
         }
 
         .doctors-grid {

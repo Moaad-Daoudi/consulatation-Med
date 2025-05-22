@@ -33,17 +33,6 @@
                 <p>Ordonnances ce mois</p>
             </div>
         </div>
-
-        
-        <div class="stat-card card-messages">
-            <div class="stat-icon-img-only">
-                <img src="<?php echo e(asset('assets/dashboard/messages.png')); ?>" alt="Messages">
-            </div>
-            <div class="stat-info">
-                <h3><?php echo e($newMessagesCount ?? 0); ?></h3> 
-                <p>Nouveaux messages</p>
-            </div>
-        </div>
     </div>
 
     

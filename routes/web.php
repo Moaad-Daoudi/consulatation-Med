@@ -11,30 +11,19 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-// Import Controllers
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\Doctor\PatientManagementController;
 use App\Http\Controllers\Doctor\ConsultationController;
 use App\Http\Controllers\Doctor\PrescriptionController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
 Route::get('/', function () {
     $doctors_data = User::whereHas('role', function ($query) {
                             $query->where('name', 'doctor');
                         })
-                        ->whereHas('doctor') // Ensure the doctor profile exists
-                        ->with('doctor') // Eager load the doctor relationship
+                        ->whereHas('doctor')
+                        ->with('doctor')
                         ->get();
 
     return view('welcome', ['doctors_list' => $doctors_data]);
@@ -49,7 +38,7 @@ Route::get('/dashboard', function (Request $request) {
                                       ->orderBy('name')
                                       ->get(['id', 'name', 'email']);
 
-            $doctorsForModal = []; // Unlikely needed for doctor's own dashboard
+            $doctorsForModal = [];
 
             // Appointments
             $appointmentsQuery = AppointmentModel::where('doctor_id', Auth::id())->with('patient');
@@ -91,7 +80,7 @@ Route::get('/dashboard', function (Request $request) {
                                 ->latest('prescription_date')
                                 ->paginate(10, ['*'], 'prescriptions_page');
 
-            // --- DOCTOR DASHBOARD STATS ---
+            // --- DOCTOR DASHBOARD ---
             $doctorId = Auth::id();
             $appointmentsTodayCount = AppointmentModel::where('doctor_id', $doctorId)
                                         ->whereDate('appointment_datetime', Carbon::today())
@@ -103,7 +92,6 @@ Route::get('/dashboard', function (Request $request) {
                                              ->whereMonth('prescription_date', Carbon::now()->month)
                                              ->whereYear('prescription_date', Carbon::now()->year)
                                              ->count();
-            $newMessagesCount = 0; // Placeholder - implement your message fetching logic
 
             // --- DOCTOR RECENT ACTIVITIES ---
             $recentConsultations = ConsultationModel::where('doctor_id', $doctorId)
@@ -149,7 +137,7 @@ Route::get('/dashboard', function (Request $request) {
             return view('layouts.doctor_dashboard', compact(
                 'patientsForModal', 'doctorsForModal', 'appointments', 'consultations',
                 'prescriptionsForDashboard', 'doctorPatients', 'appointmentsTodayCount',
-                'totalUniquePatientsCount', 'prescriptionsThisMonthCount', 'newMessagesCount',
+                'totalUniquePatientsCount', 'prescriptionsThisMonthCount',
                 'recentActivities'
             ));
 
@@ -158,37 +146,33 @@ Route::get('/dashboard', function (Request $request) {
                              ->orderBy('name')->get(['id', 'name']);
             $now = Carbon::now();
 
-            // Upcoming Appointments (for "Mes rendez-vous" and dashboard summary)
             $upcomingAppointments = AppointmentModel::where('patient_id', $user->id)
                                         ->where('appointment_datetime', '>=', $now)
-                                        ->where('status', '!=', 'cancelled') // Assuming 'scheduled' or similar are active
+                                        ->where('status', '!=', 'cancelled')
                                         ->with('doctor')
                                         ->orderBy('appointment_datetime', 'asc')
                                         ->get();
 
-            // Past Appointments (for the "Mes rendez-vous" section)
             $pastAppointments = AppointmentModel::where('patient_id', $user->id)
                                     ->where('appointment_datetime', '<', $now)
                                     ->with('doctor')
                                     ->orderBy('appointment_datetime', 'desc')
                                     ->paginate(10, ['*'], 'past_appointments_page');
 
-            // Patient's own consultations (for "Mon dossier médical" section)
             $patientConsultations = ConsultationModel::where('patient_id', Auth::id())
                                         ->with(['doctor'])
                                         ->latest('consultation_date')
                                         ->orderBy('consultation_date', 'desc')
                                         ->get();
 
-            // Patient's own prescriptions (for "Mes ordonnances" section & dashboard)
             $allPatientPrescriptions = PrescriptionModel::where('patient_id', Auth::id())
-                                        ->with(['doctor', 'items', 'consultation']) // Eager load prescription items
+                                        ->with(['doctor', 'items', 'consultation'])
                                         ->orderBy('prescription_date', 'desc')
                                         ->get();
 
             $activePrescriptions = collect();
-            $pastPrescriptions = collect(); // For the "Mes ordonnances" section
-            $currentDateTime = Carbon::now()->startOfDay(); // Use start of day for date comparisons
+            $pastPrescriptions = collect();
+            $currentDateTime = Carbon::now()->startOfDay();
 
             Log::info("--- PATIENT DASHBOARD: Processing prescriptions for patient " . Auth::id() . " at " . $currentDateTime->toDateTimeString() . " ---");
             foreach ($allPatientPrescriptions as $prescription) {
@@ -224,21 +208,20 @@ Route::get('/dashboard', function (Request $request) {
                         } else {
                             Log::info("    Item ID {$item->id} has no duration string, skipping for end date calculation of this item.");
                         }
-                    } // End foreach item
+                    }
 
-                    if ($latestItemEndDate && $currentDateTime->lessThanOrEqualTo($latestItemEndDate->endOfDay())) { // Compare with end of day of end date
+                    if ($latestItemEndDate && $currentDateTime->lessThanOrEqualTo($latestItemEndDate->endOfDay())) {
                         $isOverallPrescriptionActive = true;
                         Log::info("  Prescription ID {$prescription->id} active based on latest item end date: " . $latestItemEndDate->toDateString());
                     } elseif (is_null($latestItemEndDate) && $prescription->items->isNotEmpty()) {
                         // All items had no parsable duration. Apply a default active period.
-                        if ($prescriptionDate->copy()->addDays(30)->isAfter($currentDateTime)) { // Default active 30 days
+                        if ($prescriptionDate->copy()->addDays(30)->isAfter($currentDateTime)) {
                             $isOverallPrescriptionActive = true;
                             Log::info("  Prescription ID {$prescription->id} (all items lacked parsable duration) active by default 30-day rule.");
                         }
                     }
-                } else { // Prescription has no items
-                    // Consider it active for a short default period (e.g., 7 days from prescription_date)
-                    if ($prescriptionDate->copy()->addDays(7)->isAfter($currentDateTime)) { // Default active 7 days
+                } else {
+                    if ($prescriptionDate->copy()->addDays(7)->isAfter($currentDateTime)) {
                         $isOverallPrescriptionActive = true;
                         Log::info("  Prescription ID {$prescription->id} (no items) active by default 7-day rule.");
                     }
@@ -254,29 +237,26 @@ Route::get('/dashboard', function (Request $request) {
             }
             Log::info("--- PATIENT DASHBOARD: Finished processing prescriptions. Active: " . $activePrescriptions->count() . ", Past: " . $pastPrescriptions->count() . " ---");
 
-            // Sort them again (collections are mutable, push might not preserve order of original query)
             $activePrescriptions = $activePrescriptions->sortByDesc('prescription_date');
-            $pastPrescriptions = $pastPrescriptions->sortByDesc('prescription_date'); // For the dedicated prescriptions page
+            $pastPrescriptions = $pastPrescriptions->sortByDesc('prescription_date');
 
-            // --- Data for the Patient Dashboard Summary View ---
             $upcomingAppointmentCount = $upcomingAppointments->count();
-            $nextAppointment = $upcomingAppointments->first(); // Will be null if no upcoming
+            $nextAppointment = $upcomingAppointments->first();
             $activePrescriptionsCount = $activePrescriptions->count();
 
             $medicationReminders = collect();
             foreach ($activePrescriptions as $prescription) {
-                foreach ($prescription->items as $item) { // Assuming $prescription->items is the relationship to prescription_items
+                foreach ($prescription->items as $item) {
                     $medicationReminders->push([
-                        'name' => $item->medication_name, // Adjust to your column name
-                        'dosage' => $item->dosage,       // Adjust to your column name
-                        'frequency' => $item->frequency, // Adjust to your column name
-                        'duration' => $item->duration,   // Adjust to your column name
-                        'notes' => $item->notes,       // Adjust to your column name
+                        'name' => $item->medication_name,
+                        'dosage' => $item->dosage,
+                        'frequency' => $item->frequency,
+                        'duration' => $item->duration,
+                        'notes' => $item->notes,
                         'prescription_date' => $prescription->prescription_date
                     ]);
                 }
             }
-            // Sort reminders if needed, e.g., by prescription date then by name
             $medicationReminders = $medicationReminders->sortBy('prescription_date')->sortBy('name');
 
 
@@ -294,8 +274,7 @@ Route::get('/dashboard', function (Request $request) {
             ));
         }
     }
-    // Fallback dashboard view if no specific role dashboard is matched or user not authenticated properly
-    return view('dashboard'); // Generic dashboard, or redirect to login if Auth::check() fails earlier
+    return view('dashboard'); 
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 

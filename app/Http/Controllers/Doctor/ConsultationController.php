@@ -4,20 +4,17 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Consultation;
-use Illuminate\Http\Request; // Standard Request
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator; // Make sure this is imported
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class ConsultationController extends Controller
 {
-    /**
-     * Store a newly created consultation in storage.
-     */
-    public function store(Request $request) // Using Illuminate\Http\Request
+    public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [ // Create the validator instance
+        $validator = Validator::make($request->all(), [
             'patient_id' => 'required|exists:users,id',
             'consultation_date_time' => 'required|date',
             'reason_for_visit' => 'required|string|max:500',
@@ -44,7 +41,7 @@ class ConsultationController extends Controller
                 ->with('open_modal_on_load', $modalToReopenOnFail);
         }
 
-        $validatedData = $validator->validated(); // Get validated data from the validator
+        $validatedData = $validator->validated();
 
         try {
             Consultation::create([
@@ -70,42 +67,30 @@ class ConsultationController extends Controller
                ->with('active_section_on_load', $sectionToReopen);
     }
 
-    /**
-     * Show the form for editing the specified consultation.
-     * In SPA context, this might not be directly hit if modal is populated by JS.
-     * However, the PUT route still needs it for route model binding.
-     * We can use it to signal JS to open the edit modal with old input if validation failed on update.
-     */
     public function edit(Request $request, Consultation $consultation)
     {
         if ($consultation->doctor_id !== Auth::id()) {
             abort(403, 'Action non autorisée.');
         }
 
-        // This method is mainly for route model binding and redirecting with errors.
-        // The actual modal population is handled by JS.
         return redirect()->route('dashboard')
             ->with('active_section_on_load', 'consultations')
             ->with('open_modal_on_load', 'editConsultationModal')
             ->with('consultation_id_for_error_bag', $consultation->id);
     }
 
-    /**
-     * Update the specified consultation in storage.
-     */
-    public function update(Request $request, Consultation $consultation) // Using Illuminate\Http\Request
+    public function update(Request $request, Consultation $consultation)
     {
         if ($consultation->doctor_id !== Auth::id()) {
             abort(403, 'Action non autorisée.');
         }
 
-        $validator = Validator::make($request->all(), [ // Create the validator instance
+        $validator = Validator::make($request->all(), [
             'consultation_date_time' => 'required|date',
             'reason_for_visit' => 'required|string|max:500',
             'symptoms' => 'nullable|string',
             'notes' => 'nullable|string',
             'diagnosis' => 'nullable|string',
-            // 'appointment_id' is not typically changed during an edit of consultation from this form
         ]);
 
         $errorBagName = 'consultationEdit_' . $consultation->id;
@@ -121,16 +106,15 @@ class ConsultationController extends Controller
                 ->with('consultation_id_for_error_bag', $consultation->id);
         }
 
-        $validatedData = $validator->validated(); // Get validated data from the validator
+        $validatedData = $validator->validated();
 
         try {
             $consultation->update([
                 'consultation_date' => Carbon::parse($validatedData['consultation_date_time']),
                 'reason_for_visit' => $validatedData['reason_for_visit'],
-                'symptoms' => $validatedData['symptoms'] ?? $consultation->symptoms, // Keep old value if not provided
+                'symptoms' => $validatedData['symptoms'] ?? $consultation->symptoms,
                 'notes' => $validatedData['notes'] ?? $consultation->notes,
                 'diagnosis' => $validatedData['diagnosis'] ?? $consultation->diagnosis,
-                // 'appointment_id' and 'patient_id' are usually not updated here
             ]);
         } catch (\Exception $e) {
             Log::error("Error updating consultation {$consultation->id}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
@@ -147,9 +131,6 @@ class ConsultationController extends Controller
                ->with('active_section_on_load', $sectionToReopen);
     }
 
-    /**
-     * Remove the specified consultation from storage.
-     */
     public function destroy(Consultation $consultation)
     {
         if ($consultation->doctor_id !== Auth::id()) {

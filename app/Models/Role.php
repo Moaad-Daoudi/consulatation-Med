@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
-    use HasFactory; // Optional, but good practice
+    use HasFactory;
 
-    protected $fillable = ['name']; // Important for Role::firstOrCreate
+    protected $fillable = ['name']; 
 
     public function users()
     {
