@@ -1,6 +1,5 @@
-
 <div id="parametres" class="content-section <?php echo e((session('active_section_on_load') === 'parametres' || $errors->any()) ? 'active' : ''); ?>">
-    <div class="content-container"> 
+    <div class="content-container">
         <h2 class="section-title">Mon Profil et Paramètres</h2>
 
         
@@ -22,11 +21,11 @@
             </div>
         <?php endif; ?>
 
-        <form class="modal-form" 
+        <form class="modal-form"
               id="form-doctor-profile"
               method="POST"
               action="<?php echo e(route('profile.update')); ?>"
-              enctype="multipart/form-data"> 
+              enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
             <?php echo method_field('PATCH'); ?> 
 
@@ -156,7 +155,7 @@ unset($__errorArgs, $__bag); ?>
 
             
             <div class="form-group full-width">
-                <label for="profile-photo">Photo de Profil (Max 2Mo : JPG, PNG, GIF)</label>
+                <label for="profile-photo">Photo de Profil (JPG, PNG, GIF)</label>
                 <?php if(Auth::user()->photo_path): ?>
                 <?php else: ?>
                     <p><small>Aucune photo de profil actuellement.</small></p>

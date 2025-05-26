@@ -1,6 +1,5 @@
-{{-- resources/views/doctor/parametres.blade.php --}}
 <div id="parametres" class="content-section {{ (session('active_section_on_load') === 'parametres' || $errors->any()) ? 'active' : '' }}">
-    <div class="content-container"> {{-- Or ordonnance-container if you prefer that styling --}}
+    <div class="content-container">
         <h2 class="section-title">Mon Profil et Paramètres</h2>
 
         {{-- Success Message --}}
@@ -22,11 +21,11 @@
             </div>
         @endif
 
-        <form class="modal-form" {{-- Using modal-form class for potential 2-column layout --}}
+        <form class="modal-form"
               id="form-doctor-profile"
               method="POST"
               action="{{ route('profile.update') }}"
-              enctype="multipart/form-data"> {{-- IMPORTANT for file uploads --}}
+              enctype="multipart/form-data">
             @csrf
             @method('PATCH') {{-- Use PATCH for updates --}}
 
@@ -72,7 +71,7 @@
 
             {{-- Photo Upload --}}
             <div class="form-group full-width">
-                <label for="profile-photo">Photo de Profil (Max 2Mo : JPG, PNG, GIF)</label>
+                <label for="profile-photo">Photo de Profil (JPG, PNG, GIF)</label>
                 @if(Auth::user()->photo_path)
                 @else
                     <p><small>Aucune photo de profil actuellement.</small></p>

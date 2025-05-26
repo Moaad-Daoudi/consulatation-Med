@@ -3065,3 +3065,39 @@ into your web browser: <span class="break-all" style="box-sizing: border-box; fo
 [2025-05-21 11:24:33] local.INFO:     Parsed. End date for item ID 2: 2025-05-19  
 [2025-05-21 11:24:33] local.INFO:   >> Prescription ID 2 Classified as PAST  
 [2025-05-21 11:24:33] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 2 ---  
+[2025-05-22 14:56:09] local.INFO: --- PATIENT DASHBOARD: Processing prescriptions for patient 2 at 2025-05-22 00:00:00 ---  
+[2025-05-22 14:56:09] local.INFO: Prescription ID: 1, Date: 2025-05-20  
+[2025-05-22 14:56:09] local.INFO:   Item: aaaa, Duration String: '1'  
+[2025-05-22 14:56:09] local.INFO:     Parsed. End date for item ID 1: 2025-05-20  
+[2025-05-22 14:56:09] local.INFO:   >> Prescription ID 1 Classified as PAST  
+[2025-05-22 14:56:09] local.INFO: Prescription ID: 2, Date: 2025-05-13  
+[2025-05-22 14:56:09] local.INFO:   Item: la pompe à protons, Duration String: '7'  
+[2025-05-22 14:56:09] local.INFO:     Parsed. End date for item ID 2: 2025-05-19  
+[2025-05-22 14:56:09] local.INFO:   >> Prescription ID 2 Classified as PAST  
+[2025-05-22 14:56:09] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 2 ---  
+[2025-05-22 14:56:20] local.INFO: --- PATIENT DASHBOARD: Processing prescriptions for patient 2 at 2025-05-22 00:00:00 ---  
+[2025-05-22 14:56:20] local.INFO: Prescription ID: 1, Date: 2025-05-20  
+[2025-05-22 14:56:20] local.INFO:   Item: aaaa, Duration String: '1'  
+[2025-05-22 14:56:20] local.INFO:     Parsed. End date for item ID 1: 2025-05-20  
+[2025-05-22 14:56:20] local.INFO:   >> Prescription ID 1 Classified as PAST  
+[2025-05-22 14:56:20] local.INFO: Prescription ID: 2, Date: 2025-05-13  
+[2025-05-22 14:56:20] local.INFO:   Item: la pompe à protons, Duration String: '7'  
+[2025-05-22 14:56:20] local.INFO:     Parsed. End date for item ID 2: 2025-05-19  
+[2025-05-22 14:56:20] local.INFO:   >> Prescription ID 2 Classified as PAST  
+[2025-05-22 14:56:20] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 2 ---  
+[2025-05-22 14:58:35] local.INFO: --- PATIENT DASHBOARD: Processing prescriptions for patient 2 at 2025-05-22 00:00:00 ---  
+[2025-05-22 14:58:35] local.INFO: Prescription ID: 1, Date: 2025-05-20  
+[2025-05-22 14:58:35] local.INFO:   Item: aaaa, Duration String: '1'  
+[2025-05-22 14:58:35] local.INFO:     Parsed. End date for item ID 1: 2025-05-20  
+[2025-05-22 14:58:35] local.INFO:   >> Prescription ID 1 Classified as PAST  
+[2025-05-22 14:58:35] local.INFO: Prescription ID: 2, Date: 2025-05-13  
+[2025-05-22 14:58:35] local.INFO:   Item: la pompe à protons, Duration String: '7'  
+[2025-05-22 14:58:35] local.INFO:     Parsed. End date for item ID 2: 2025-05-19  
+[2025-05-22 14:58:35] local.INFO:   >> Prescription ID 2 Classified as PAST  
+[2025-05-22 14:58:35] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 2 ---  
+[2025-05-22 14:59:27] local.INFO: --- PATIENT DASHBOARD: Processing prescriptions for patient 7 at 2025-05-22 00:00:00 ---  
+[2025-05-22 14:59:27] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 0 ---  
+[2025-05-22 14:59:49] local.INFO: --- PATIENT DASHBOARD: Processing prescriptions for patient 7 at 2025-05-22 00:00:00 ---  
+[2025-05-22 14:59:49] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 0 ---  
+[2025-05-22 15:00:26] local.INFO: --- PATIENT DASHBOARD: Processing prescriptions for patient 8 at 2025-05-22 00:00:00 ---  
+[2025-05-22 15:00:26] local.INFO: --- PATIENT DASHBOARD: Finished processing prescriptions. Active: 0, Past: 0 ---  
