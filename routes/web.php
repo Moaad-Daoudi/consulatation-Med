@@ -37,7 +37,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    Route::resource('appointments', AdminAppointmentController::class)->except(['create', 'edit', 'show']);
 });
 
 Route::middleware(['auth', 'doctor'])->prefix('doctor')->name('doctor.')->group(function () {
